@@ -1,0 +1,28 @@
+{
+  "name": "frontend",
+  "version": "0.1.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node -r esm ./src/server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/swsad-team/BackEnd.git"
+  },
+  "author": "swsad-team",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/swsad-team/BackEnd/issues"
+  },
+  "homepage": "https://github.com/swsad-team/BackEnd#readme",
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "connect-mongo": "^2.0.3",
+    "esm": "^3.2.18",
+    "express": "^4.16.4",
+    "express-session": "^1.15.6",
+    "hash.js": "^1.1.7",
+    "mongoose": "^5.4.19"
+  }
+}
