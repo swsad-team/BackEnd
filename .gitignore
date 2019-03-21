@@ -62,3 +62,6 @@ typings/
 
 # logs
 log
+
+dest
+.compiled
