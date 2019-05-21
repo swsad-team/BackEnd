@@ -20,6 +20,7 @@
   },
   "homepage": "https://github.com/swsad-team/BackEnd#readme",
   "dependencies": {
+    "bcrypt": "^3.0.6",
     "body-parser": "^1.18.3",
     "connect-mongo": "^2.0.3",
     "cookie-parser": "^1.4.4",
