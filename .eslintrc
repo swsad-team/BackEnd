@@ -1,6 +1,7 @@
 {
   "extends": "eslint:recommended",
   "env": {
+    "es6": true,
     "node": true,
     "jest": true
   },
@@ -9,17 +10,11 @@
     "sourceType": "module"
   },
   "rules": {
-    "semi": [
-      "error",
-      "never"
-    ],
+    "semi": ["error", "never"],
     "no-console": "warn",
     "no-unused-vars": "warn",
     "no-empty": "warn",
-    "indent": [
-      "error",
-      2
-    ],
+    "indent": ["error", 2],
     "space-in-parens": "error",
     "no-multiple-empty-lines": [
       "error",
@@ -29,6 +24,7 @@
       }
     ],
     "no-multi-spaces": "error",
-    "comma-spacing": "error"
+    "comma-spacing": "error",
+    "comma-dangle": ["error", true]
   }
 }
