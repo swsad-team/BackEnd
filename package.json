@@ -4,10 +4,11 @@
   "description": "Back end",
   "main": "index.js",
   "scripts": {
-    "start": "npm run compile && node ./.compiled/server.js",
+    "debug": "nodemon --inspect --exec babel-node src/app.js",
+    "start": "nodemon --exec babel-node src/app.js",
     "lint": "eslint src --fix",
     "test": "npm run compile && jest dest",
-    "compile": "babel src --out-dir .compiled --source-maps"
+    "compile": "babel src --watch --out-dir .compiled --source-maps"
   },
   "repository": {
     "type": "git",
@@ -20,8 +21,9 @@
   },
   "homepage": "https://github.com/swsad-team/BackEnd#readme",
   "dependencies": {
+    "@babel/node": "^7.4.5",
     "bcrypt": "^3.0.6",
-    "body-parser": "^1.18.3",
+    "body-parser": "^1.19.0",
     "connect-mongo": "^2.0.3",
     "cookie-parser": "^1.4.4",
     "dotenv": "^7.0.0",
@@ -32,12 +34,14 @@
     "jsonwebtoken": "^8.5.0",
     "mongoose": "^5.4.19",
     "morgan": "^1.9.1",
+    "nodemon": "^1.19.1",
     "winston": "^3.2.1"
   },
   "devDependencies": {
     "@babel/cli": "^7.2.3",
     "@babel/core": "^7.3.4",
     "@babel/preset-env": "^7.3.4",
+    "@types/dotenv": "^6.1.1",
     "babel-jest": "^24.5.0",
     "eslint": "^5.15.2",
     "jest": "^24.5.0"
