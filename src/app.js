@@ -1,19 +1,41 @@
 import express from 'express'
-import dotenv from 'dotenv'
 import morgan from 'morgan'
 import cookieParser from 'cookie-parser'
-dotenv.config()
+import mongoose from 'mongoose'
+import bodyParser from 'body-parser'
+import userRouter from './router/userRouter'
+import logger from './util/logger'
+import config from './config'
+import { authenticate } from './util/auth'
 
 const app = express()
 
+config(app)
 
 app.use(morgan('tiny'))
 app.use(cookieParser())
+app.use(bodyParser.urlencoded({ extended: true }))
+app.use(bodyParser.json())
 
-app.set("port", process.env.PORT || 3000)
+app.use(authenticate)
+app.use('/users', userRouter)
 
-app.all('*', (req, res) => {
-  res.send('Hi')
+app.use(function(err, req, res, next) {
+  logger.error(err.stack)
+  res.status(500).end()
 })
 
-export default app
+mongoose.connect(
+  app.get('db_uri'),
+  { useNewUrlParser: true, useFindAndModify: false },
+  err => {
+    if (err) {
+      logger.error(err)
+    } else {
+      logger.info('Connected to database')
+      app.listen(app.get('port'), () => {
+        logger.info(`Server running on port ${app.get('port')}`)
+      })
+    }
+  }
+)
