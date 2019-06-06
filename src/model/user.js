@@ -4,12 +4,12 @@ import { getNextUid } from './global'
 mongoose.set('debug', true)
 
 const userSchema = new mongoose.Schema({
-  id: {
+  uid: {
     required: false,
     type: Number,
     unique: true,
   },
-  nickname: {
+  name: {
     required: true,
     type: String,
     unique: true,
