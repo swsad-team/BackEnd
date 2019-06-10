@@ -5,29 +5,27 @@ mongoose.set('debug', true)
 
 const userSchema = new mongoose.Schema({
   uid: {
-    required: false,
     type: Number,
-    unique: true,
-  },
-  name: {
     required: true,
-    type: String,
     unique: true,
-  }, // for organization nickname eqs name
-  name: {
-    required: true,
-    type: String,
   },
   email: {
     type: String,
-    lowercase: true,
-    unique: true,
-  },
-  password: {
-    type: String,
     required: true,
+    unique: true,
+    lowercase: true,
   },
   phone: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  name: {
+    required: true,
+    type: String,
+    unique: true,
+  }, // display name
+  password: {
     type: String,
     required: true,
   },
@@ -35,7 +33,17 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     required: true,
   },
+  coin: {
+    type: Boolean,
+    required: true,
+  },
   // 个人账户
+  realname: {
+    type: String,
+    required: function() {
+      return this.isOrganization !== true
+    },
+  },
   birthYear: {
     type: Number,
     required: function() {
@@ -45,6 +53,12 @@ const userSchema = new mongoose.Schema({
   gender: {
     type: String,
     enum: ['male', 'female', 'other'],
+    required: function() {
+      return this.isOrganization !== true
+    },
+  },
+  studentId: {
+    type: String,
     required: function() {
       return this.isOrganization !== true
     },
@@ -74,14 +88,16 @@ userSchema.pre('save', async function(next) {
   next()
 })
 userSchema.pre('save', async function(next) {
-  if (this.id) next()
-  this.id = await getNextUid()
+  if (this.uid) next()
+  this.uid = await getNextUid()
   next()
 })
 userSchema.pre('save', function(next) {
   if (this.isOrganization == true) {
     delete this.gender
     delete this.birthYear
+    delete this.realname
+    delete this.studentId
   } else [delete this.address]
 })
 

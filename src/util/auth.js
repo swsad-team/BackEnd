@@ -5,7 +5,7 @@ import dotenv from 'dotenv'
 
 dotenv.config()
 
-const expireTime = 60 * 60 * 24 // one day
+let expireTime = 60 * 60 * 24 // one day
 
 if (process.env.MODE === 'DEVELOPMENT') {
   expireTime *= 365
