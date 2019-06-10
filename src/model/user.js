@@ -10,8 +10,7 @@ if (process.env.MODE === 'DEVELOPMENT') {
 const userSchema = new mongoose.Schema({
   uid: {
     type: Number,
-    required: true,
-    unique: true,
+    required: false,
   },
   email: {
     type: String,
@@ -23,11 +22,13 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
+    validate: val => val.match(/^\d{11}$/),
   },
   name: {
     required: true,
     type: String,
     unique: true,
+    validate: val => val.match(/^\s*$/) === null,
   }, // display name
   password: {
     type: String,
@@ -39,7 +40,8 @@ const userSchema = new mongoose.Schema({
   },
   coin: {
     type: Boolean,
-    required: true,
+    required: false,
+    validate: val => val > 0,
   },
   // 个人账户
   realname: {
@@ -47,6 +49,7 @@ const userSchema = new mongoose.Schema({
     required: function() {
       return this.isOrganization !== true
     },
+    validate: val => val.match(/^\s*$/) === null,
   },
   birthYear: {
     type: Number,
@@ -63,8 +66,11 @@ const userSchema = new mongoose.Schema({
   },
   studentID: {
     type: String,
-    required: true,
     unique: true,
+    required: function() {
+      return this.isOrganization !== true
+    },
+    validate: val => val.match(/\D/) === null,
   },
   // 组织账户
   address: {
@@ -72,6 +78,7 @@ const userSchema = new mongoose.Schema({
     required: function() {
       return this.isOrganization === true
     },
+    validate: val => val.match(/^\s*$/) === null,
   },
 })
 
@@ -87,7 +94,6 @@ userSchema.pre('save', async function(next) {
       next(err)
     }
   }
-
   next()
 })
 userSchema.pre('save', async function(next) {
@@ -100,18 +106,24 @@ userSchema.pre('save', function(next) {
     delete this.gender
     delete this.birthYear
     delete this.realname
-    delete this.studentId
-  } else [delete this.address]
+    delete this.studentID
+  } else delete this.address
+  next()
 })
-
+userSchema.pre('save', function(next) {
+  if (this.coin === undefined) {
+    this.coin = 0
+  }
+  next()
+})
 // instance method
 userSchema.methods.getPublicFields = function() {
   let common = {
     id: this.id,
-    nickname: this.nickname,
     name: this.name,
     email: this.email,
     phone: this.phone,
+    coin: this.coin,
     isOrganization: this.isOrganization,
   }
   if (this.isOrganization) {
@@ -122,6 +134,7 @@ userSchema.methods.getPublicFields = function() {
     return Object.assign(common, {
       birthYear: this.birthYear,
       gender: this.gender,
+      realname: this.realname,
       studentID: this.studentID,
     })
   }
@@ -129,15 +142,6 @@ userSchema.methods.getPublicFields = function() {
 
 userSchema.methods.comparePassword = function(password) {
   return bcrypt.compareSync(password, this.password)
-}
-
-userSchema.methods.update = async function(newUserInfo) {
-  Object.keys(newUserInfo).forEach(val => (this[val] = newUserInfo[val]))
-  try {
-    await this.save()
-  } catch (err) {
-    return err
-  }
 }
 
 const User = mongoose.model('User', userSchema)
