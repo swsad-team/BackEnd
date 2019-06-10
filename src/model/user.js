@@ -1,7 +1,11 @@
 import mongoose from 'mongoose'
 import bcrypt from 'bcrypt'
+import dotenv from 'dotenv'
 import { getNextUid } from './global'
-mongoose.set('debug', true)
+dotenv.config()
+if (process.env.MODE === 'DEVELOPMENT') {
+  mongoose.set('debug', true)
+}
 
 const userSchema = new mongoose.Schema({
   uid: {
@@ -57,11 +61,10 @@ const userSchema = new mongoose.Schema({
       return this.isOrganization !== true
     },
   },
-  studentId: {
+  studentID: {
     type: String,
-    required: function() {
-      return this.isOrganization !== true
-    },
+    required: true,
+    unique: true,
   },
   // 组织账户
   address: {
@@ -119,6 +122,7 @@ userSchema.methods.getPublicFields = function() {
     return Object.assign(common, {
       birthYear: this.birthYear,
       gender: this.gender,
+      studentID: this.studentID,
     })
   }
 }
