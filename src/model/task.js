@@ -45,6 +45,9 @@ const taskSchema = new mongoose.Schema({
   participant: [{
     type: Number,
   }],
+  finisher: [{
+    type: Number,
+  }],
   // if task is a questionnaire, none
   question: [{
     isRequired: {
