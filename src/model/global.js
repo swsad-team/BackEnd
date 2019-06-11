@@ -7,6 +7,10 @@ const globalSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
+  tidCount: {
+    type: Number,
+    default: 0,
+  },
 })
 
 const Global = mongoose.model('Glob', globalSchema)
@@ -23,5 +27,20 @@ export const getNextUid = async () => {
     })
     await newG.save()
     return newG.uidCount
+  }
+}
+
+export const getNextTid = async () => {
+  const g = await Global.findOne({})
+  if (g) {
+    g.tidCount++
+    await g.save()
+    return g.tidCount
+  } else {
+    const newG = new Global({
+      tidCount: 0,
+    })
+    await newG.save()
+    return newG.tidCount
   }
 }
