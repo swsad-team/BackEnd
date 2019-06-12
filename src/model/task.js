@@ -20,6 +20,10 @@ const taskSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  isQuestion: {
+    type: Boolean,
+    required: true,
+  },
   startTime: {
     required: true,
     type: Date,
@@ -75,6 +79,12 @@ const taskSchema = new mongoose.Schema({
 taskSchema.pre('save', async function(next) {
   if (this.tid) next()
   this.tid = await getNextTid()
+  next()
+})
+taskSchema.pre('save', function(next) {
+  if (this.isQuestion != true) {
+    delete this.question
+  }
   next()
 })
 
