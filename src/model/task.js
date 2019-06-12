@@ -12,6 +12,10 @@ const taskSchema = new mongoose.Schema({
     type: Number,
     required: false,
   },
+  publisherId: {
+    type: Number,
+    required: true,
+  },
   title: {
     type: String,
     required: true,
