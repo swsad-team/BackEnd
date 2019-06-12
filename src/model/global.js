@@ -11,10 +11,10 @@ const globalSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
-  aidCount: {
-    type: Number,
-    default: 0,
-  },
+  // aidCount: {
+  //   type: Number,
+  //   default: 0,
+  // },
 })
 
 const Global = mongoose.model('Glob', globalSchema)
@@ -49,17 +49,17 @@ export const getNextTid = async () => {
   }
 }
 
-export const getNextAid = async () => {
-  const g = await Global.findOne({})
-  if (g) {
-    g.aidCount++
-    await g.save()
-    return g.aidCount
-  } else {
-    const newG = new Global({
-      aidCount: 0,
-    })
-    await newG.save()
-    return newG.aidCount
-  }
-}
+// export const getNextAid = async () => {
+//   const g = await Global.findOne({})
+//   if (g) {
+//     g.aidCount++
+//     await g.save()
+//     return g.aidCount
+//   } else {
+//     const newG = new Global({
+//       aidCount: 0,
+//     })
+//     await newG.save()
+//     return newG.aidCount
+//   }
+// }
