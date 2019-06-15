@@ -1,5 +1,4 @@
 import mongoose from 'mongoose'
-import bcrypt from 'bcrypt'
 import dotenv from 'dotenv'
 dotenv.config()
 if (process.env.MODE === 'DEVELOPMENT') {
@@ -11,26 +10,32 @@ const answerListSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
-  answer: {
-    type: [{
-      uid: {
-        type: Number,
-        required: true,
+  answers: {
+    type: [
+      {
+        uid: {
+          type: Number,
+          required: true,
+        },
+        content: {
+          type: [Schema.Types.Mixed], // types determined by questionnaire
+          required: true,
+        },
       },
-      content: {
-        type: [String],
-        required: true,
-      },
-    }],
+    ],
     required: true,
   },
 })
 
-// answerListSchema.pre('save', async function(next) {
-//   if (this.aid) next()
-//   this.aid = await getNextAid()
-//   next()
-// })
+answerListSchema.methods.addAnswer = async function(uid, content) {
+  if (this.answers.some(val => val.uid === uid)) return false
+  this.answer.push({
+    uid,
+    content,
+  })
+  await tthis.save()
+  return true
+}
 
 const AnswerList = mongoose.model('AnswerList', answerListSchema)
 

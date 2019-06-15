@@ -4,6 +4,7 @@ import cookieParser from 'cookie-parser'
 import mongoose from 'mongoose'
 import bodyParser from 'body-parser'
 import userRouter from './router/userRouter'
+import taskRouter from './router/taskRouter'
 import logger from './util/logger'
 import config from './config'
 import { authenticate } from './util/auth'
@@ -19,6 +20,7 @@ app.use(bodyParser.json())
 
 app.use(authenticate)
 app.use('/users', userRouter)
+app.use('/tasks', taskRouter)
 
 app.use(function(err, req, res, next) {
   logger.error(err.stack)
