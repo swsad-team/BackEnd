@@ -6,7 +6,7 @@ import logger from '../util/logger'
 // return JWT token
 export const login = async (req, res) => {
   const identity = {
-    nicname: req.body.nickname || req.params.nickname,
+    nicname: req.body.name || req.params.name,
     email: req.body.email || req.params.email,
   }
   Object.keys(identity).forEach(
@@ -46,7 +46,6 @@ export const updateUser = async (req, res) => {
 
 export const createUser = async (req, res) => {
   const newData = req.body
-  console.log(newData)
   try {
     const user = new User(newData)
     await user.save()
