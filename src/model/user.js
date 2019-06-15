@@ -119,7 +119,7 @@ userSchema.pre('save', function(next) {
 // instance method
 userSchema.methods.getPublicFields = function() {
   let common = {
-    id: this.id,
+    uid: this.uid,
     name: this.name,
     email: this.email,
     phone: this.phone,

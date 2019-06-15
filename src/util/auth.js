@@ -1,7 +1,7 @@
 import User from '../model/user'
 import jwt from 'jsonwebtoken'
-import logger from './logger'
 import dotenv from 'dotenv'
+import { info } from 'winston'
 
 dotenv.config()
 
@@ -34,7 +34,8 @@ export const decodeJwtToken = token => {
     const payload = jwt.verify(token, key)
     return payload
   } catch (err) {
-    return undefined
+    info.error(err)
+    return null
   }
 }
 
@@ -47,16 +48,14 @@ export const authenticate = async (req, _, next) => {
     req.header('authorization') &&
     req.header('authorization').startsWith('Bearer')
   ) {
-    let token = req.header('authorization').split(' ')[1]
+    let token = req.header('authorization').split(/\s+/)[1]
     let payload = decodeJwtToken(token)
-    if (payload && payload.id !== undefined) {
+    if (payload && payload.uid !== undefined) {
       const user = await User.findOne({
-        id: payload.id,
+        uid: payload.uid,
       })
       req.user = user
     }
-  } else {
-    req.user = 'hello'
   }
   next()
 }
