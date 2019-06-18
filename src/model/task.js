@@ -58,7 +58,7 @@ const taskSchema = new mongoose.Schema({
     type: Number,
     required: true,
     validate: function(val) {
-      return val > 0 && val > this.participants.length
+      return val > 0 && val >= this.participants.length
     },
   },
   participants: {
