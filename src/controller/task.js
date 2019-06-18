@@ -130,7 +130,7 @@ export const createTask = async (req, res) => {
   try {
     const task = new Task(data)
     req.user.coin -= coins
-    await new Promise([task.save(), req.user.save()])
+    await Promise.all([task.save(), req.user.save()])
     res.status(200).json(task.getTaskFields())
   } catch (err) {
     logger.info(err)
@@ -220,6 +220,32 @@ export const finishTask = async (req, res) => {
   } catch (err) {
     logger.info(err)
     res.status(400).end('UNKNOWN_ERROR')
+  }
+}
+
+export const getAnswersOfTask = async (req, res, next) => {
+  const user = req.user
+  const tid = req.params.tid
+  try {
+    const task = await Task.findOne({
+      tid,
+    })
+    if (task === null) {
+      res.status(404).end('TASK_NOT_FOUND')
+    }
+    if (task.publisherId !== user.uid) {
+      res.status(403).end('NOT_PUBLISHER')
+    }
+    const answers = await AnswerList.find(
+      {
+        tid,
+      },
+      'answers -_id uid'
+    )
+    res.status(200).json(answers)
+  } catch (err) {
+    logger.info(err)
+    res.status(400).end()
   }
 }
 

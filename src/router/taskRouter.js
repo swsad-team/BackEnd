@@ -25,6 +25,13 @@ router.get(
   }),
   taskController.getQuestionnaireOfTask
 )
+router.get(
+  '/:tid/answers',
+  guard({
+    user: true,
+  }),
+  taskController.getAnswersOfTask
+)
 router.post('/', guard(), taskController.createTask)
 // router.put('/:tid', guard(), taskController.updateTask)
 router.post(
