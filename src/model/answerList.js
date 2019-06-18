@@ -1,5 +1,5 @@
-import mongoose from 'mongoose'
 import dotenv from 'dotenv'
+import mongoose from 'mongoose'
 dotenv.config()
 if (process.env.MODE === 'DEVELOPMENT') {
   mongoose.set('debug', true)
@@ -10,33 +10,16 @@ const answerListSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
+  uid: {
+    type: Number,
+    required: true,
+  },
   answers: {
-    type: [
-      {
-        uid: {
-          type: Number,
-          required: true,
-        },
-        content: {
-          type: [Schema.Types.Mixed], // types determined by questionnaire
-          required: true,
-        },
-      },
-    ],
+    type: [mongoose.Schema.Types.Mixed], // types determined by questionnaire
     required: true,
   },
 })
 
-answerListSchema.methods.addAnswer = async function(uid, content) {
-  if (this.answers.some(val => val.uid === uid)) return false
-  this.answer.push({
-    uid,
-    content,
-  })
-  await tthis.save()
-  return true
-}
-
-const AnswerList = mongoose.model('AnswerList', answerListSchema)
+const AnswerList = mongoose.model('Answer', answerListSchema)
 
 export default AnswerList
