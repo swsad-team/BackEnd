@@ -1,7 +1,7 @@
 import User from '../model/user'
-import jwt from 'jsonwebtoken'
 import dotenv from 'dotenv'
-import { info } from 'winston'
+import jwt from 'jsonwebtoken'
+import logger from './logger'
 
 dotenv.config()
 
@@ -34,7 +34,7 @@ export const decodeJwtToken = token => {
     const payload = jwt.verify(token, key)
     return payload
   } catch (err) {
-    info.error(err)
+    logger.error(err)
     return null
   }
 }

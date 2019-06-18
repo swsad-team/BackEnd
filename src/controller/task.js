@@ -1,17 +1,77 @@
+import AnswerList from '../model/answerList'
 import Task from '../model/task'
+import User from '../model/user'
 import logger from '../util/logger'
-
 export const getTasks = async (req, res) => {
-  const { offset, limit, sort, ...condition } = req.query
-  const tid = req.params.tid
+  console.log('hihih')
+  let { page, per_page, sort, filter } = req.query
+  const { tid } = req.params
+  const user = req.user
+
+  // filter
+  const filterOption = {
+    participable: {
+      isValid: true,
+      participants: { $ne: user && user.uid },
+      publisherId: { $ne: user && user.uid },
+    },
+    valid: {
+      isValid: { $eq: true },
+    },
+    organizational: {
+      organizational: true,
+    },
+    personal: {
+      organizational: false,
+    },
+    questionnaire: {
+      isQuestionnaire: true,
+    },
+    mission: {
+      isQuestionnaire: false,
+    },
+  }
+  const queryOption =
+    filter &&
+    filter.reduce((acc, val) => ({ ...acc, ...filterOption[val] }), {})
+
+  // pagination
+  let skip
+  let limit
+  if (page) {
+    skip = (page - 1) * per_page
+    limit = Number(per_page)
+  }
+
+  // sort
+  let sortOption
+  switch (sort) {
+    case 'time':
+      sortOption = {
+        startTime: -1,
+      }
+      break
+    case 'coin':
+      sortOption = {
+        reward: -1,
+      }
+      break
+    default:
+      break
+  }
+
   try {
     if (tid === undefined) {
-      const tasks = await Task.find(condition, null, {
-        skip: offset,
+      const tasks = await Task.find(queryOption, null, {
+        skip,
         limit,
-        sort: {},
+        sort: sortOption,
       })
-      res.status(200).json(tasks.map(t => t.getTaskFields()))
+      if (tasks.length > 0) {
+        res.status(200).json(tasks.map(t => t.getTaskFields()))
+      } else {
+        res.status(404).end()
+      }
     } else {
       const task = await Task.findOne({ tid })
       if (task) {
@@ -35,13 +95,18 @@ export const getQuestionnaireOfTask = async (req, res) => {
     try {
       const task = await Task.findOne({ tid })
       if (task) {
-        if (task.participants.includes(uid)) {
+        if (task.isQuestionnaire === false) {
+          res.status(404).end('NOT_QUESTIONNAIRE')
+        } else if (
+          task.participants.includes(uid) ||
+          task.publisherId === uid
+        ) {
           res.status(200).json(task.getQuestionnaire())
         } else {
           res.status(403).json()
         }
       } else {
-        req.status(404).end()
+        res.status(404).end()
       }
     } catch (err) {
       logger.error(err)
@@ -56,11 +121,16 @@ export const createTask = async (req, res) => {
   delete data.finishers
   delete data.coinPool
   const coins = data.reward * data.numOfPeople
+  data.organizational = req.user.isOrganization
+  data.coinPool = coins
+  if (req.user.coin < coins) {
+    res.status(400).end('COIN_NOT_ENOUGHT')
+    return
+  }
   try {
-    // TODO: calculate reward
-
     const task = new Task(data)
-    await task.save()
+    req.user.coin -= coins
+    await new Promise([task.save(), req.user.save()])
     res.status(200).json(task.getTaskFields())
   } catch (err) {
     logger.info(err)
@@ -71,23 +141,19 @@ export const createTask = async (req, res) => {
 export const attendTask = async (req, res) => {
   const tid = req.params.tid
   try {
-    const task = await Task.findOne({ tid })
+    const task = await Task.findOne({
+      isValid: true,
+      tid,
+      publisherId: { $ne: req.user.uid },
+      participants: { $ne: req.user.uid },
+    })
     if (task === null) {
-      res.status(404).end()
-      return
-    }
-    if (!task.isValid()) {
-      res.status(400).end()
-      return
-    }
-    if (task.participants.includes(req.user.uid)) {
       res.status(400).end()
       return
     }
     // start session
     task.participants.push(req.user.uid)
     await task.save()
-    // TODO: 处理用户参加状态
     res.status(200).end()
   } catch (err) {
     logger.info(err)
@@ -95,75 +161,104 @@ export const attendTask = async (req, res) => {
   }
 }
 export const finishTask = async (req, res) => {
-  const tid = req.params.tid
+  const tid = Number(req.params.tid)
+  const self = req.user
+  const targetUid = req.query.user
+  const answers = req.body
   try {
     const task = await Task.findOne({ tid })
-    if (tid.isQuestionnaire) {
-      const uid = req.user.uid
-      if (!task.participants.includes(uid)) {
-        res.status(400).end()
-      }
-      const answer = req.body
-      // TODO: check save answer here
-      task.finishers.push(uid)
-      await task.save()
-      res.status(200).end()
-    } else {
-      const self = req.user.uid
-      const uid = req.queru.user
-      if (task.publisherId !== uid) {
-        res.status(403).end()
+    if (task.isQuestionnaire) {
+      if (!task.participants.includes(self.uid)) {
+        res.status(400).end('USER_NOT_IN_TASK')
         return
       }
-      if (!task.participants.includes(uid)) {
-        res.status(400).end()
+      const targetAnswer = await AnswerList.findOne({
+        uid: self.uid,
+        tid,
+      })
+      if (targetAnswer !== null) {
+        res.status(400).end('ANSWER_EXISTS')
         return
       }
-      task.finishers.push(uid)
-      await task.save()
-      res.status(200).end()
-    }
-  } catch (err) {
-    res.status(400).end()
-  }
-}
+      if (answers.length !== task.question.length) {
+        res.status(400).end('INVALID_ANSWER')
+        return
+      }
 
-export const quitTask = async (req, res) => {
-  const tid = req.params.tid
-  const uid = req.user.uid
-  try {
-    const task = await Task.findOne({ tid })
-    if (task.finishers.includes(uid) || !task.participants.includes(uid)) {
-      res.status(400).end()
-      return
+      const answer = new AnswerList({
+        tid,
+        uid: self.uid,
+        answers,
+      })
+      task.finishers.push(self.uid)
+      task.coinPool -= task.reward
+      req.user.coin += task.reward
+      await Promise.all([answer.save(), task.save(), req.user.save()])
+      res.status(200).end('OK')
+    } else {
+      const target = await User.findOne({
+        uid: targetUid,
+      })
+      if (target === null) {
+        res.status(404).end('TARGET_USER_NOT_FOUND')
+      }
+      console.log(task, self.uid)
+      if (task.publisherId !== self.uid) {
+        res.status(403).end('NOT_PUBLISHER')
+        return
+      }
+      if (!task.participants.includes(targetUid)) {
+        res.status(400).end('TARGET_USER_NOT_IN_TASK')
+        return
+      }
+      task.finishers.push(targetUid)
+      target.coin += task.reward
+      task.coinPool -= task.reward
+      await Promise.all([task.save(), target.save(), req.user.save()])
+      res.status(200).end('OK')
     }
-    task.participants = task.participants.filter(u => u !== uid)
-    await task.save()
-    res.status(200).end()
   } catch (err) {
     logger.info(err)
-    res.status(400).end()
+    res.status(400).end('UNKNOWN_ERROR')
   }
 }
 
-export const updateTask = async (req, res) => {
-  const data = req.body
-  const tid = req.params.tid
-  const uid = req.user.uid
-  delete data.participants
-  delete data.finishers
-  delete data.startTime
-  try {
-    const task = await findOneAndUpdate({ tid, publisherId: uid }, data, {
-      omitUndefined: true,
-      new: true,
-    })
-    if (task === null) {
-      res.status(404).end()
-      return
-    }
-    res.status(200).json(task.getPublicFields())
-  } catch (err) {
-    res.status(403).end()
-  }
-}
+// export const quitTask = async (req, res) => {
+//   const tid = req.params.tid
+//   const uid = req.user.uid
+//   try {
+//     const task = await Task.findOne({ tid })
+//     if (task.finishers.includes(uid) || !task.participants.includes(uid)) {
+//       res.status(400).end()
+//       return
+//     }
+//     task.participants = task.participants.filter(u => u !== uid)
+//     await task.save()
+//     res.status(200).end()
+//   } catch (err) {
+//     logger.info(err)
+//     res.status(400).end()
+//   }
+// }
+
+// export const updateTask = async (req, res) => {
+//   const data = req.body
+//   const tid = req.params.tid
+//   const uid = req.user.uid
+//   delete data.participants
+//   delete data.finishers
+//   delete data.startTime
+//   try {
+//     const task = await findOneAndUpdate({ tid, publisherId: uid }, data, {
+//       omitUndefined: true,
+//       new: true,
+//     })
+//     if (task === null) {
+//       res.status(404).end()
+//       return
+//     }
+//     res.status(200).json(task.getPublicFields())
+//   } catch (err) {
+//     res.status(403).end()
+//   }
+// }

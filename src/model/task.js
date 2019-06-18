@@ -1,9 +1,7 @@
-import mongoose from 'mongoose'
-import bcrypt from 'bcrypt'
 import dotenv from 'dotenv'
 import { getNextTid } from './global'
 import logger from '../util/logger'
-import { thisExpression } from '@babel/types'
+import mongoose from 'mongoose'
 dotenv.config()
 if (process.env.MODE === 'DEVELOPMENT') {
   mongoose.set('debug', true)
@@ -88,6 +86,10 @@ const taskSchema = new mongoose.Schema({
       }
     },
   },
+  organizational: {
+    type: Boolean,
+    required: true,
+  },
   // if task is not a questionnaire, none
   question: {
     type: [
@@ -116,9 +118,14 @@ const taskSchema = new mongoose.Schema({
     required: function() {
       return this.isQuestionnaire
     },
-    validate: val => val && val.length !== 0,
+    validate: function(val) {
+      return !this.isQuestionnaire || val.length !== 0
+    },
   },
-
+  isValid: {
+    type: Boolean,
+    default: true,
+  },
   // questions: questionSchema,
 })
 
@@ -127,13 +134,20 @@ taskSchema.pre('save', async function(next) {
   next()
 })
 taskSchema.pre('save', function(next) {
-  if (this.isQuestion !== true) {
-    delete this.question
+  if (this.isQuestionnaire !== true) {
+    this.question = undefined
+  }
+  if (
+    this.isCancel &&
+    this.participants.length > this.numOfPeople &&
+    this.endTime < Date.now()
+  ) {
+    this.isValid = false
   }
   next()
 })
+
 taskSchema.methods.getTaskFields = function() {
-  logger.info(this.participants)
   return {
     tid: this.tid,
     publisherId: this.publisherId,
@@ -147,17 +161,12 @@ taskSchema.methods.getTaskFields = function() {
     numOfPeople: this.numOfPeople,
     participants: this.participants,
     finishers: this.finishers,
+    isValid: this.isValid,
+    organizational: this.organizational,
   }
 }
 taskSchema.methods.getQuestionnaire = function() {
   return this.question
-}
-taskSchema.methods.isValid = function() {
-  return (
-    !this.isCancel &&
-    this.participants.length < this.numOfPeople &&
-    this.endTime > Date.now()
-  )
 }
 
 const Task = mongoose.model('Task', taskSchema)

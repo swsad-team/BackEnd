@@ -1,12 +1,14 @@
-import express from 'express'
 import * as taskController from '../controller/task'
+
+import express from 'express'
+
 const router = express.Router()
 const guard = ({ login = true, user = false, organization = false } = {}) => {
   return (req, res, next) => {
     if (
-      (req.user === undefined && login) ||
-      (req.user.isOrganization && user) ||
-      (!req.user.isOrganization && organization)
+      (!req.user && login) ||
+      (user && req.user.isOrganization) ||
+      (organization && !req.user.isOrganization)
     ) {
       res.status(403).end()
     } else {
@@ -24,7 +26,7 @@ router.get(
   taskController.getQuestionnaireOfTask
 )
 router.post('/', guard(), taskController.createTask)
-router.put('/:tid', guard(), taskController.updateTask)
+// router.put('/:tid', guard(), taskController.updateTask)
 router.post(
   '/:tid/attend',
   guard({
@@ -39,12 +41,12 @@ router.post(
   }),
   taskController.finishTask
 )
-router.post(
-  '/:tid/quit',
-  guard({
-    user: true,
-  }),
-  taskController.quitTask
-)
+// router.post(
+//   '/:tid/quit',
+//   guard({
+//     user: true,
+//   }),
+//   taskController.quitTask
+// )
 
 export default router
