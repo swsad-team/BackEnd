@@ -5,10 +5,8 @@ const router = express.Router()
 router.post('/', userController.createUser)
 router.get('/', userController.getUsers)
 router.get('/login', userController.login)
-router.get('/:id', userController.getUsers)
-router.delete('/:id', userController.deleteUser)
-
-// not in API.yaml
-router.put('/:id', userController.updateUser)
+router.get('/:uid', userController.getUser)
+router.delete('/:uid', userController.deleteUser)
+router.patch('/:uid', userController.updateUser)
 
 export default router

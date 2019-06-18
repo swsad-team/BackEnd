@@ -11,7 +11,8 @@ export const login = async (req, res) => {
   const account = req.body.account || req.params.account
   const password = req.body.password || req.params.password
   const user = await User.findOne({$or: [
-    {email: account}, {phone: account}
+    {email: account},
+    {phone: account}
   ]})
   if (user) {
     if (user.comparePassword(password)) {
@@ -28,16 +29,20 @@ export const login = async (req, res) => {
 export const logout = (req, res) => {}
 
 export const updateUser = async (req, res) => {
-  const targetUserId = req.params.id // string
-  const currentUserId = req.user.id // number
-  if (targetUserId !== currentUserId.toString()) res.status(403).end()
-  const updateData = req.body
+  const id = req.params.uid
+  var data = req.body
+  if (data.uid || data.isOrganization || data.studentID || data.phone || data.email) {
+    res.status(400).end('Invalid property')
+  }
   try {
-    const user = await User.findOneAndUpdate({ id: targetUserId }, updateData, {
-      omitUndefined: true,
-      new: true,
+    const user = await User.findOneAndUpdate({uid: id}, data, {
+      new: true
     })
-    res.status(200).json(user.getPublicFields())
+    if (user) {
+      res.status(200).json(user.getPublicFields())
+    } else {
+      res.status(404).end('NOT found user')
+    }
   } catch (err) {
     res.status(400).end('ERROR')
   }
@@ -70,20 +75,33 @@ export const createUser = async (req, res) => {
   }
 }
 
-export const getUsers = async (req, res) => {
-  const condition = req.query
-  const userId = req.params.id
+export const getUser = async (req, res) => {
+  const id = req.params.uid
   try {
-    if (userId === undefined) {
-      const users = await User.find(condition)
-      res.status(200).json(users.map(user => user.getPublicFields()))
+    const user = await User.findOne({uid: req.params.uid})
+    if (user) {
+      res.status(200).json(user.getPublicFields())
     } else {
-      const user = await User.findOne({ id: userId })
-      if (user) {
-        res.status(200).json(user.getPublicFields())
-      } else {
-        res.status(404).end()
-      }
+      res.status(404).end('NOT found user')
+    }
+  } catch (err) {
+    res.status(400).end('ERROR')
+  }
+}
+
+export const getUsers = async (req, res) => {
+  const uidArray = req.body
+  if (uidArray.length == 0) {
+    res.status(400).end("Empty array")
+  }
+  try {
+    if (uidArray) {
+      const users = await User.find({uid: uidArray})
+      res.status(200).json(users.map(user => {
+        user = user.getPublicFields()
+        user.coin = undefined
+        return user
+      }))
     }
   } catch (err) {
     logger.error(err)
@@ -92,5 +110,15 @@ export const getUsers = async (req, res) => {
 }
 
 export const deleteUser = async (req, res) => {
-
+  const id = req.params.uid
+  try {
+    const user = await User.findOneAndDelete({uid: id})
+    if (user) {
+      res.status(200).end('Delete Successful')
+    } else {
+      res.status(404).end('NOT found uid')
+    }
+  } catch (err) {
+    res.status(400).end('ERROR')
+  }
 }
