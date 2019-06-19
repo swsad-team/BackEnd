@@ -110,13 +110,19 @@ export const getUsers = async (req, res) => {
 }
 
 export const deleteUser = async (req, res) => {
-  const id = req.params.uid
+  const uid = req.body.uid
+  const password = req.body.password
   try {
-    const user = await User.findOneAndDelete({uid: id})
+    const user = await User.findOne({uid: uid})
     if (user) {
-      res.status(200).end('Delete Successful')
+      if (user.comparePassword(password)) {
+        await User.deleteOne({uid: uid})
+        res.status(200).end('Delete Successfully')
+      } else {
+        res.status(400).end('PASSWORD_INCORRECT')
+      }
     } else {
-      res.status(404).end('NOT found uid')
+      res.status(404).end('NOT found user')
     }
   } catch (err) {
     res.status(400).end('ERROR')
