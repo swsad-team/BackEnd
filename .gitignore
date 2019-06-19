@@ -59,3 +59,15 @@ typings/
 
 # next.js build output
 .next
+
+# logs
+log
+
+dest
+.compiled
+
+yarn.lock
+
+key.json
+
+app.yaml
