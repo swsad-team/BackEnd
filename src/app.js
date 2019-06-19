@@ -8,8 +8,7 @@ import express from 'express'
 import logger from './util/logger'
 import mongoose from 'mongoose'
 import morgan from 'morgan'
-import taskRouter from './router/taskRouter'
-import userRouter from './router/userRouter'
+import router from './router/baseRouter'
 
 // gcp.start()
 const app = express()
@@ -27,13 +26,8 @@ app.use(bodyParser.json())
 //     .send('Hello, world!')
 //     .end()
 // })
-app.all('*', (req, res, next) => {
-  console.log(req)
-  next()
-})
 app.use(authenticate)
-app.use('/users', userRouter)
-app.use('/tasks', taskRouter)
+app.use('/api', router)
 
 app.use(function(err, req, res, next) {
   logger.error(err.stack)
