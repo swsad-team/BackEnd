@@ -2,7 +2,7 @@ import decodeJwtToken from '../util/auth'
 import User from '../model/user'
 import { signJwtToken } from '../util/auth'
 import logger from '../util/logger'
-import { async } from 'rxjs/internal/scheduler/async';
+import { async } from 'rxjs/internal/scheduler/async'
 
 const initialCoin = 100
 
@@ -10,10 +10,9 @@ const initialCoin = 100
 export const login = async (req, res) => {
   const account = req.body.account || req.params.account
   const password = req.body.password || req.params.password
-  const user = await User.findOne({$or: [
-    {email: account},
-    {phone: account}
-  ]})
+  const user = await User.findOne({
+    $or: [{ email: account }, { phone: account }],
+  })
   if (user) {
     if (user.comparePassword(password)) {
       const token = signJwtToken(user.getPublicFields())
@@ -31,12 +30,18 @@ export const logout = (req, res) => {}
 export const updateUser = async (req, res) => {
   const id = req.params.uid
   var data = req.body
-  if (data.uid || data.isOrganization || data.studentID || data.phone || data.email) {
+  if (
+    data.uid ||
+    data.isOrganization ||
+    data.studentID ||
+    data.phone ||
+    data.email
+  ) {
     res.status(400).end('Invalid property')
   }
   try {
-    const user = await User.findOneAndUpdate({uid: id}, data, {
-      new: true
+    const user = await User.findOneAndUpdate({ uid: id }, data, {
+      new: true,
     })
     if (user) {
       res.status(200).json(user.getPublicFields())
@@ -57,18 +62,23 @@ export const createUser = async (req, res) => {
     res.status(200).json(user.getPublicFields())
   } catch (err) {
     logger.info(err)
-    const another = await User.findOne({$or: [
-      {email: newData.email},
-      {phone: newData.phone},
-      {name: newData.name},
-      {studentID: newData.studentID}
-    ]})
+    const another = await User.findOne({
+      $or: [
+        { email: newData.email },
+        { phone: newData.phone },
+        { name: newData.name },
+        { studentID: newData.studentID },
+      ],
+    })
     if (another) {
-      const msg = another.email == newData.email ? 'email' :(
-        another.phone == newData.phone ? 'phone' :(
-          another.name == newData.name ? 'name' : 'studentID'
-        )
-      )
+      const msg =
+        another.email == newData.email
+          ? 'email'
+          : another.phone == newData.phone
+          ? 'phone'
+          : another.name == newData.name
+          ? 'name'
+          : 'studentID'
       res.status(400).end(msg)
     }
     res.status(400).end('invalid')
@@ -78,7 +88,7 @@ export const createUser = async (req, res) => {
 export const getUser = async (req, res) => {
   const id = req.params.uid
   try {
-    const user = await User.findOne({uid: req.params.uid})
+    const user = await User.findOne({ uid: req.params.uid })
     if (user) {
       res.status(200).json(user.getPublicFields())
     } else {
@@ -92,16 +102,18 @@ export const getUser = async (req, res) => {
 export const getUsers = async (req, res) => {
   const uidArray = req.body
   if (uidArray.length == 0) {
-    res.status(400).end("Empty array")
+    res.status(400).end('Empty array')
   }
   try {
     if (uidArray) {
-      const users = await User.find({uid: uidArray})
-      res.status(200).json(users.map(user => {
-        user = user.getPublicFields()
-        user.coin = undefined
-        return user
-      }))
+      const users = await User.find({ uid: uidArray })
+      res.status(200).json(
+        users.map(user => {
+          user = user.getPublicFields()
+          user.coin = undefined
+          return user
+        })
+      )
     }
   } catch (err) {
     logger.error(err)
@@ -112,7 +124,7 @@ export const getUsers = async (req, res) => {
 export const deleteUser = async (req, res) => {
   const id = req.params.uid
   try {
-    const user = await User.findOneAndDelete({uid: id})
+    const user = await User.findOneAndDelete({ uid: id })
     if (user) {
       res.status(200).end('Delete Successful')
     } else {
