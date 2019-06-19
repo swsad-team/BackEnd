@@ -131,7 +131,7 @@ userSchema.methods.getPublicFields = function() {
     phone: this.phone,
     coin: this.coin,
     isOrganization: this.isOrganization,
-    isChecked: Date(this.lastCheckDate) < Date(new Date().toLocaleDateString()) ? false : true,
+    isChecked: new Date(this.lastCheckDate) < new Date(new Date().toLocaleDateString()) ? false : true,
   }
   if (this.isOrganization) {
     return Object.assign(common, {

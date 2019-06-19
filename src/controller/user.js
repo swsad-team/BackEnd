@@ -129,7 +129,7 @@ export const check = async (req, res) => {
     const user = await User.findOne({uid: id})
     if (user) {
       const today = new Date().toLocaleDateString()
-      if (Date(user.lastCheckDate) < Date(today)) {
+      if (new Date(user.lastCheckDate) < new Date(today)) {
         const data = {
           coin: user.coin + 50,
           isChecked: true
