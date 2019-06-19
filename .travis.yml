@@ -8,8 +8,8 @@ deploy:
   provider: gae
   keyfile: key.json
   project: swsad-cloud
-  on:
-    tags: true
+  # on:
+  #   tags: true
 before_install:
   - openssl aes-256-cbc -K $encrypted_948d23443eed_key -iv $encrypted_948d23443eed_iv
     -in key.json.enc -out key.json -d
