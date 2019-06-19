@@ -1,5 +1,3 @@
-// import * as gcp from '@google-cloud/debug-agent'
-
 import { authenticate } from './util/auth'
 import bodyParser from 'body-parser'
 import config from './config'
@@ -10,7 +8,6 @@ import mongoose from 'mongoose'
 import morgan from 'morgan'
 import router from './router/baseRouter'
 
-// gcp.start()
 const app = express()
 
 config(app)

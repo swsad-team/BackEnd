@@ -4,7 +4,7 @@ import userRouter from './userRouter'
 
 const router = express.Router()
 
-router.all('/users', userRouter)
-router.all('/tasks', taskRouter)
+router.use('/users', userRouter)
+router.use('/tasks', taskRouter)
 
 export default router
