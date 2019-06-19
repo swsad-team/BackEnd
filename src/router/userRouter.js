@@ -7,8 +7,8 @@ router.post('/', userController.createUser)
 router.get('/', userController.getUsers)
 router.post('/login', userController.login)
 router.get('/:uid', userController.getUser)
-router.delete('/:uid', userController.deleteUser)
 router.patch('/:uid', userController.updateUser)
 router.get('/:uid/check', userController.check)
+router.delete('/delete', userController.deleteUser)
 
 export default router
