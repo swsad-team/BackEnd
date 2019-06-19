@@ -9,7 +9,7 @@
     "start": "node ./.compiled/app.js",
     "lint": "eslint src --fix",
     "test": "npm run compile && jest dest",
-    "compile": "rm -r ./.compiled && babel src --out-dir .compiled --source-maps"
+    "compile": "babel src --out-dir .compiled --source-maps"
   },
   "repository": {
     "type": "git",
