@@ -129,7 +129,7 @@ export const check = async (req, res) => {
     const user = await User.findOne({uid: id})
     if (user) {
       const today = new Date().toLocaleDateString()
-      if (user.lastCheckDate < today) {
+      if (Date(user.lastCheckDate) < Date(today)) {
         const data = {
           coin: user.coin + 50,
           isChecked: true
@@ -153,14 +153,14 @@ export const check = async (req, res) => {
 }
 
 export const test = async (req, res) => {
-  const date = new Date("2019-06-19T13:22:05.000Z")
-  const date1 = new Date("2019-06-18T20:22:05.000Z")
-  // const date1 = new Date(date.toLocaleString())
-  // const date2 = new Date(date + date.getTimezoneOffset())
+  const date = new Date("2019-09-01T13:22:05.000Z")
+  const date1 = new Date("2019-09-01T20:22:05.000Z")
   console.log(date, date.toLocaleDateString())
   console.log(date1, date1.toLocaleDateString())
-  console.log(date.toLocaleDateString() > date1.toLocaleDateString())
-  console.log(date.toLocaleDateString() < date1.toLocaleDateString())
-  console.log(date.toLocaleDateString() == date1.toLocaleDateString())
+  console.log(Date(date.toLocaleDateString()) > Date(date1.toLocaleDateString()))
+  console.log(new Date(date.toLocaleDateString()) < new Date(date1.toLocaleDateString()))
+  console.log(new Date(date.toLocaleDateString()) == new Date(date1.toLocaleDateString()))
+  // console.log(date.toLocaleDateString() < date1.toLocaleDateString())
+  // console.log(date.toLocaleDateString() == date1.toLocaleDateString())
   res.status(200).end()
 }
