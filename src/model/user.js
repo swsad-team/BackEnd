@@ -43,6 +43,10 @@ const userSchema = new mongoose.Schema({
     required: false,
     validate: val => val > 0,
   },
+  lastCheckDate: {
+    type: String,
+    required: false,
+  },
   // 个人账户
   realname: {
     type: String,
@@ -113,6 +117,9 @@ userSchema.pre('save', function(next) {
   if (this.coin === undefined) {
     this.coin = 0
   }
+  if (this.lastCheckDate === undefined) {
+    this.lastCheckDate = new Date(0).toLocaleDateString()
+  }
   next()
 })
 // instance method
@@ -124,6 +131,7 @@ userSchema.methods.getPublicFields = function() {
     phone: this.phone,
     coin: this.coin,
     isOrganization: this.isOrganization,
+    isChecked: this.lastCheckDate < new Date().toLocaleDateString() ? false : true,
   }
   if (this.isOrganization) {
     return Object.assign(common, {

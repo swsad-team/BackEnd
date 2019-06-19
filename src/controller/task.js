@@ -3,7 +3,6 @@ import Task from '../model/task'
 import User from '../model/user'
 import logger from '../util/logger'
 export const getTasks = async (req, res) => {
-  console.log('hihih')
   let { page, per_page, sort, filter } = req.query
   const { tid } = req.params
   const user = req.user

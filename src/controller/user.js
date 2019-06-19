@@ -78,7 +78,7 @@ export const createUser = async (req, res) => {
 export const getUser = async (req, res) => {
   const id = req.params.uid
   try {
-    const user = await User.findOne({uid: req.params.uid})
+    const user = await User.findOne({uid: id})
     if (user) {
       res.status(200).json(user.getPublicFields())
     } else {
@@ -90,18 +90,18 @@ export const getUser = async (req, res) => {
 }
 
 export const getUsers = async (req, res) => {
-  const uidArray = req.body
-  if (uidArray.length == 0) {
-    res.status(400).end("Empty array")
-  }
+  const uidArray = req.query.uid
   try {
-    if (uidArray) {
+    if (uidArray && uidArray.length !== 0) {
       const users = await User.find({uid: uidArray})
       res.status(200).json(users.map(user => {
         user = user.getPublicFields()
+        user.isChecked = undefined
         user.coin = undefined
         return user
       }))
+    } else {
+      res.status(400).end("Empty array")
     }
   } catch (err) {
     logger.error(err)
@@ -121,4 +121,46 @@ export const deleteUser = async (req, res) => {
   } catch (err) {
     res.status(400).end('ERROR')
   }
+}
+
+export const check = async (req, res) => {
+  const id = req.params.uid
+  try {
+    const user = await User.findOne({uid: id})
+    if (user) {
+      const today = new Date().toLocaleDateString()
+      if (user.lastCheckDate < today) {
+        const data = {
+          coin: user.coin + 50,
+          isChecked: true
+        }
+        await User.updateOne({uid: id}, {
+          coin: data.coin,
+          lastCheckDate: today
+        }, {
+          new: true
+        })
+        res.status(200).json(data)
+      } else {
+        res.status(404).end('User has checked today')
+      }
+    } else {
+      res.status(400).end('NOT found user')
+    }
+  } catch (err) {
+    res.status(400).end('ERROR')
+  }
+}
+
+export const test = async (req, res) => {
+  const date = new Date("2019-06-19T13:22:05.000Z")
+  const date1 = new Date("2019-06-18T20:22:05.000Z")
+  // const date1 = new Date(date.toLocaleString())
+  // const date2 = new Date(date + date.getTimezoneOffset())
+  console.log(date, date.toLocaleDateString())
+  console.log(date1, date1.toLocaleDateString())
+  console.log(date.toLocaleDateString() > date1.toLocaleDateString())
+  console.log(date.toLocaleDateString() < date1.toLocaleDateString())
+  console.log(date.toLocaleDateString() == date1.toLocaleDateString())
+  res.status(200).end()
 }
