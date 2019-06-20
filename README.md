@@ -1,5 +1,7 @@
 # BackEnd
 
+[![Build Status](https://travis-ci.com/swsad-team/BackEnd.svg?branch=master)](https://travis-ci.com/swsad-team/BackEnd)
+
 ## 使用
 
 需安装 `NodeJS LTS`
