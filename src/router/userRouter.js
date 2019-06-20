@@ -2,13 +2,21 @@ import express from 'express'
 import * as userController from '../controller/user'
 const router = express.Router()
 
-router.get('/test', userController.test)
+const loginGuard = (req, res, next) => {
+  if (!req.user) {
+    res.status(401).end()
+  } else {
+    next()
+  }
+}
+
+// router.get('/test', userController.test)
 router.post('/', userController.createUser)
 router.get('/', userController.getUsers)
 router.post('/login', userController.login)
-router.get('/:uid', userController.getUser)
-router.patch('/:uid', userController.updateUser)
-router.get('/:uid/check', userController.check)
-router.delete('/delete', userController.deleteUser)
+router.post('/check', loginGuard, userController.check)
+router.get('/:uid', loginGuard, userController.getUser)
+router.patch('/', loginGuard, userController.updateUser)
+router.delete('/delete', loginGuard, userController.deleteUser)
 
 export default router
