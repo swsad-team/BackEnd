@@ -3,7 +3,7 @@ import Task from '../model/task'
 import User from '../model/user'
 import logger from '../util/logger'
 export const getTasks = async (req, res) => {
-  logger.info('GET TASKS')
+  logger.info('Controller: getTasks')
   let { page, per_page, sort, filter } = req.query
   const { tid } = req.params
   const user = req.user
