@@ -67,3 +67,7 @@ dest
 .compiled
 
 yarn.lock
+
+key.json
+
+app.yaml

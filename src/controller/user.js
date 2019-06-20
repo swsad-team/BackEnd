@@ -31,6 +31,7 @@ export const updateUser = async (req, res) => {
   logger.info('CONTROLLER: updateUser')
   const self = req.user
   var data = req.body
+  
   const forbiddenProperties = [
     'uid',
     'isOrganization',
@@ -51,6 +52,7 @@ export const updateUser = async (req, res) => {
     await self.save()
 
     res.status(200).json(self.getPublicFields())
+
   } catch (err) {
     logger.info(err)
     if (err.name === 'ValidationError') {
@@ -101,7 +103,6 @@ export const getUser = async (req, res) => {
     const user = await User.findOne({ uid: req.params.uid })
     if (user === null) {
       res.status(404).end()
-      return
     }
     res.status(200).json({
       ...user.getPublicFields(),
@@ -174,7 +175,6 @@ export const check = async (req, res) => {
         coin: self.coin,
         isChecked: true,
       })
-      return
     } else {
       res.status(404).end('ALREADY_CHECKED')
     }
