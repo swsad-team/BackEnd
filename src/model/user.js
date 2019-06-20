@@ -101,8 +101,9 @@ userSchema.pre('save', async function(next) {
   next()
 })
 userSchema.pre('save', async function(next) {
-  if (this.uid !== undefined) next()
-  this.uid = await getNextUid()
+  if (this.uid === undefined) {
+    this.uid = await getNextUid()
+  }
   next()
 })
 userSchema.pre('save', function(next) {
