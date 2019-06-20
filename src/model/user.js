@@ -101,7 +101,7 @@ userSchema.pre('save', async function(next) {
   next()
 })
 userSchema.pre('save', async function(next) {
-  if (this.uid) next()
+  if (this.uid !== undefined) next()
   this.uid = await getNextUid()
   next()
 })
@@ -118,7 +118,10 @@ userSchema.pre('save', function(next) {
     this.coin = 0
   }
   if (this.lastCheckDate === undefined) {
-    this.lastCheckDate = new Date(0).toLocaleDateString()
+    this.lastCheckDate = new Date(0).toLocaleDateString({
+      month: '2-digit',
+      day: '2-digit',
+    })
   }
   next()
 })
@@ -131,19 +134,23 @@ userSchema.methods.getPublicFields = function() {
     phone: this.phone,
     coin: this.coin,
     isOrganization: this.isOrganization,
-    isChecked: new Date(this.lastCheckDate) < new Date(new Date().toLocaleDateString()) ? false : true,
+    isChecked:
+      this.lastCheckDate >=
+      new Date().toLocaleDateString({
+        month: '2-digit',
+        day: '2-digit',
+      }),
   }
   if (this.isOrganization) {
-    return Object.assign(common, {
-      address: this.address,
-    })
+    return { ...common, address: this.address }
   } else {
-    return Object.assign(common, {
+    return {
+      ...common,
       birthYear: this.birthYear,
       gender: this.gender,
       realname: this.realname,
       studentID: this.studentID,
-    })
+    }
   }
 }
 
