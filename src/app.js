@@ -1,13 +1,12 @@
-import express from 'express'
-import morgan from 'morgan'
-import cookieParser from 'cookie-parser'
-import mongoose from 'mongoose'
-import bodyParser from 'body-parser'
-import userRouter from './router/userRouter'
-import taskRouter from './router/taskRouter'
-import logger from './util/logger'
-import config from './config'
 import { authenticate } from './util/auth'
+import bodyParser from 'body-parser'
+import config from './config'
+import cookieParser from 'cookie-parser'
+import express from 'express'
+import logger from './util/logger'
+import mongoose from 'mongoose'
+import morgan from 'morgan'
+import router from './router/baseRouter'
 
 const app = express()
 
@@ -18,9 +17,14 @@ app.use(cookieParser())
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(bodyParser.json())
 
+// app.get('/', (req, res) => {
+//   res
+//     .status(200)
+//     .send('Hello, world!')
+//     .end()
+// })
 app.use(authenticate)
-app.use('/users', userRouter)
-app.use('/tasks', taskRouter)
+app.use('/api', router)
 
 app.use(function(err, req, res, next) {
   logger.error(err.stack)
@@ -35,9 +39,10 @@ mongoose.connect(
       logger.error(err)
     } else {
       logger.info('Connected to database')
-      app.listen(app.get('port'), () => {
-        logger.info(`Server running on port ${app.get('port')}`)
-      })
     }
   }
 )
+
+app.listen(app.get('port'), () => {
+  logger.info(`Server running on port ${app.get('port')}`)
+})
