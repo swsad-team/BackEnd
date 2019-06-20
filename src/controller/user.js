@@ -2,12 +2,12 @@ import decodeJwtToken from '../util/auth'
 import User from '../model/user'
 import { signJwtToken } from '../util/auth'
 import logger from '../util/logger'
-import { async } from 'rxjs/internal/scheduler/async'
 
 const initialCoin = 100
 
 // return JWT token
 export const login = async (req, res) => {
+  logger.info('CONTROLLER: login')
   const account = req.body.account || req.params.account
   const password = req.body.password || req.params.password
   const user = await User.findOne({
@@ -28,109 +28,158 @@ export const login = async (req, res) => {
 export const logout = (req, res) => {}
 
 export const updateUser = async (req, res) => {
-  const id = req.params.uid
+  logger.info('CONTROLLER: updateUser')
+  const self = req.user
   var data = req.body
-  if (
-    data.uid ||
-    data.isOrganization ||
-    data.studentID ||
-    data.phone ||
-    data.email
-  ) {
-    res.status(400).end('Invalid property')
+  
+  const forbiddenProperties = [
+    'uid',
+    'isOrganization',
+    'studentID',
+    'phone',
+    'email',
+    'coin',
+    '_id',
+    '__v',
+  ]
+  if (Object.keys(data).some(key => forbiddenProperties.includes(key))) {
+    res.status(400).end('INVALID_PROPERTY')
+    return
   }
   try {
-    const user = await User.findOneAndUpdate({ uid: id }, data, {
-      new: true,
-    })
-    if (user) {
-      res.status(200).json(user.getPublicFields())
-    } else {
-      res.status(404).end('NOT found user')
-    }
+    // FIXME: check property [coin, _uid, __v]
+    Object.keys(data).forEach(key => (self[key] = data[key]))
+    await self.save()
+
+    res.status(200).json(self.getPublicFields())
+
   } catch (err) {
-    res.status(400).end('ERROR')
+    logger.info(err)
+    if (err.name === 'ValidationError') {
+      res.status(400).end('VALIDATION_ERROR')
+      return
+    }
+    res.status(400).end('UNKNOWN_ERROR')
   }
 }
 
 export const createUser = async (req, res) => {
+  logger.info('CONTROLLER: createUser')
+
   const newData = req.body
   newData.coin = initialCoin
+  const checkProperties = ['email', 'phone', 'name', 'studentID']
   try {
+    // check user
+    const another = await User.findOne({
+      $or: checkProperties.map(val => ({
+        [val]: newData[val],
+      })),
+    })
+    if (another) {
+      const msg = checkProperties
+        .filter(val => another[val] === newData[val])
+        .map(val => `DUPLICATE_${val.toUpperCase()}`)
+      res.status(400).json(msg)
+      return
+    }
     const user = new User(newData)
     await user.save()
     res.status(200).json(user.getPublicFields())
   } catch (err) {
     logger.info(err)
-    const another = await User.findOne({
-      $or: [
-        { email: newData.email },
-        { phone: newData.phone },
-        { name: newData.name },
-        { studentID: newData.studentID },
-      ],
-    })
-    if (another) {
-      const msg =
-        another.email == newData.email
-          ? 'email'
-          : another.phone == newData.phone
-          ? 'phone'
-          : another.name == newData.name
-          ? 'name'
-          : 'studentID'
-      res.status(400).end(msg)
+    if (err.name === 'ValidationError') {
+      res.status(400).end('VALIDATION_ERROR')
+      return
     }
-    res.status(400).end('invalid')
+    res.status(400).end('UNKNOWN_ERROR')
   }
 }
 
 export const getUser = async (req, res) => {
-  const id = req.params.uid
-  try {
+  logger.info('CONTROLLER: getUser')
+  const self = req.user
+  if (self.uid !== Number(req.params.uid)) {
     const user = await User.findOne({ uid: req.params.uid })
-    if (user) {
-      res.status(200).json(user.getPublicFields())
-    } else {
-      res.status(404).end('NOT found user')
+    if (user === null) {
+      res.status(404).end()
     }
-  } catch (err) {
-    res.status(400).end('ERROR')
+    res.status(200).json({
+      ...user.getPublicFields(),
+      isChecked: undefined,
+      coin: undefined,
+    })
+  } else {
+    res.status(200).json(self.getPublicFields())
   }
 }
 
 export const getUsers = async (req, res) => {
-  const uidArray = req.body
-  if (uidArray.length == 0) {
-    res.status(400).end('Empty array')
+  logger.info('CONTROLLER: getUsers')
+
+  const uidArray = req.query.uid
+  if (!Array.isArray(uidArray) || uidArray.length === 0) {
+    res.status(400).end('EMPTY_USER')
+    return
   }
   try {
-    if (uidArray) {
-      const users = await User.find({ uid: uidArray })
-      res.status(200).json(
-        users.map(user => {
-          user = user.getPublicFields()
-          user.coin = undefined
-          return user
-        })
-      )
+    const users = await User.find({ uid: uidArray })
+    if (users.length === 0) {
+      res.status(404).end()
     }
+    res.status(200).json(
+      users.map(user => {
+        user = user.getPublicFields()
+        user.isChecked = undefined
+        user.coin = undefined
+        return user
+      })
+    )
   } catch (err) {
     logger.error(err)
-    res.status(400).end()
+    res.status(400).end('UNKNOWN_ERROR')
   }
 }
 
 export const deleteUser = async (req, res) => {
-  const id = req.params.uid
+  logger.info('CONTROLLER: deleteUser')
+
+  const uid = req.body.uid
+  if (req.user.uid !== uid) {
+    res.status(403).end()
+    return
+  }
   try {
-    const user = await User.findOneAndDelete({ uid: id })
-    if (user) {
-      res.status(200).end('Delete Successful')
+    await User.deleteOne({ uid: uid })
+    res.status(200).end()
+  } catch (err) {
+    logger.info(err)
+    res.status(400).end('UNKNOWN_ERROR')
+  }
+}
+
+export const check = async (req, res) => {
+  logger.info('CONTROLLER: check')
+
+  const self = req.user
+  try {
+    const today = new Date().toLocaleDateString({
+      month: '2-digit',
+      day: '2-digit',
+    })
+    if (self.lastCheckDate < today) {
+      self.coin += 50
+      self.lastCheckDate = today
+      await self.save()
+      res.status(200).json({
+        coin: self.coin,
+        isChecked: true,
+      })
     } else {
-      res.status(404).end('NOT found uid')
+      res.status(404).end('ALREADY_CHECKED')
     }
   } catch (err) {
-    res.status(400).end('ERROR')
+    logger.info(err)
+    res.status(400).end('UNKNOWN_ERROR')
   }
 }
