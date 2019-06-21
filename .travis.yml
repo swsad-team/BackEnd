@@ -1,14 +1,15 @@
 language: node_js
 node_js:
-- '10'
+  - '10'
 script:
-- yarn compile
-- "./create_app_yaml.sh"
+  - yarn lint
+  - yarn test
+  - ./create_app_yaml.sh
 deploy:
   provider: gae
   skip_cleanup: true
   keyfile: key.json
   project: swsad-cloud
 before_install:
-- openssl aes-256-cbc -K $encrypted_948d23443eed_key -iv $encrypted_948d23443eed_iv
-  -in key.json.enc -out key.json -d
+  - openssl aes-256-cbc -K $encrypted_948d23443eed_key -iv $encrypted_948d23443eed_iv
+    -in key.json.enc -out key.json -d
