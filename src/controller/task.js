@@ -202,7 +202,6 @@ export const finishTask = async (req, res) => {
       if (target === null) {
         res.status(404).end('TARGET_USER_NOT_FOUND')
       }
-      console.log(task, self.uid)
       if (task.publisherId !== self.uid) {
         res.status(403).end('NOT_PUBLISHER')
         return
@@ -223,7 +222,7 @@ export const finishTask = async (req, res) => {
   }
 }
 
-export const getAnswersOfTask = async (req, res, next) => {
+export const getAnswersOfTask = async (req, res) => {
   const user = req.user
   const tid = req.params.tid
   try {
