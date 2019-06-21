@@ -27,7 +27,10 @@ export const login = async (req, res) => {
 export const updateUser = async (req, res) => {
   logger.info('CONTROLLER: updateUser')
   const self = req.user
-  var data = req.body
+  if (self.uid !== Number(req.params.uid)) {
+    res.status(403).end()
+  }
+  const data = req.body
 
   const forbiddenProperties = [
     'uid',
@@ -44,7 +47,6 @@ export const updateUser = async (req, res) => {
     return
   }
   try {
-    // FIXME: check property [coin, _uid, __v]
     Object.keys(data).forEach(key => (self[key] = data[key]))
     await self.save()
 
