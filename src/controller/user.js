@@ -1,7 +1,7 @@
 import User from '../model/user'
 import { signJwtToken } from '../util/auth'
 import logger from '../util/logger'
-
+import moment from 'moment'
 const initialCoin = 100
 
 // return JWT token
@@ -29,6 +29,7 @@ export const updateUser = async (req, res) => {
   const self = req.user
   if (self.uid !== Number(req.params.uid)) {
     res.status(403).end()
+    return
   }
   const data = req.body
 
@@ -102,6 +103,7 @@ export const getUser = async (req, res) => {
     const user = await User.findOne({ uid: req.params.uid })
     if (user === null) {
       res.status(404).end()
+      return
     }
     res.status(200).json({
       ...user.getPublicFields(),
@@ -125,6 +127,7 @@ export const getUsers = async (req, res) => {
     const users = await User.find({ uid: uidArray })
     if (users.length === 0) {
       res.status(404).end()
+      return
     }
     res.status(200).json(
       users.map(user => {
@@ -142,14 +145,13 @@ export const getUsers = async (req, res) => {
 
 export const deleteUser = async (req, res) => {
   logger.info('CONTROLLER: deleteUser')
-
-  const uid = req.body.uid
-  if (req.user.uid !== uid) {
+  const self = req.user
+  if (self.uid !== Number(req.params.uid)) {
     res.status(403).end()
     return
   }
   try {
-    await User.deleteOne({ uid: uid })
+    await User.deleteOne({ uid: self.uid })
     res.status(200).end()
   } catch (err) {
     logger.info(err)
@@ -162,10 +164,7 @@ export const check = async (req, res) => {
 
   const self = req.user
   try {
-    const today = new Date().toLocaleDateString({
-      month: '2-digit',
-      day: '2-digit',
-    })
+    const today = moment().format('YYYY/MM/DD')
     if (self.lastCheckDate < today) {
       self.coin += 50
       self.lastCheckDate = today

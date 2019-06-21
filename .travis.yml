@@ -2,8 +2,8 @@ language: node_js
 node_js:
   - '10'
 script:
-  - yarn lint
-  - yarn test
+  - npm run lint
+  - npm run test
   - ./create_app_yaml.sh
 deploy:
   provider: gae

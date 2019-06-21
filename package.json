@@ -1,14 +1,13 @@
 {
   "name": "backend",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Back end",
-  "main": "index.js",
   "scripts": {
     "debug": "nodemon --inspect --exec babel-node src/server.js",
     "start-dev": "nodemon --exec babel-node src/server.js",
     "start": "node ./.compiled/server.js",
     "lint": "eslint src --fix",
-    "test": "babel src --out-dir .compiled --source-maps && jest .compiled",
+    "test": "jest src --forceExit --detectOpenHandles",
     "compile": "babel src --out-dir .compiled --source-maps"
   },
   "repository": {
@@ -22,29 +21,31 @@
   },
   "homepage": "https://github.com/swsad-team/BackEnd#readme",
   "dependencies": {
-    "@babel/cli": "^7.2.3",
-    "@babel/core": "^7.3.4",
-    "@babel/node": "^7.4.5",
-    "@babel/preset-env": "^7.3.4",
-    "@google-cloud/debug-agent": "^4.0.0",
-    "@types/dotenv": "^6.1.1",
-    "babel-jest": "^24.5.0",
     "bcrypt": "^3.0.6",
     "body-parser": "^1.19.0",
     "connect-mongo": "^2.0.3",
     "cookie-parser": "^1.4.4",
     "dotenv": "^7.0.0",
-    "eslint": "^5.15.2",
-    "esm": "^3.2.18",
     "express": "^4.16.4",
     "express-session": "^1.15.6",
     "hash.js": "^1.1.7",
-    "jest": "^24.5.0",
     "jsonwebtoken": "^8.5.0",
+    "moment": "^2.24.0",
     "mongoose": "^5.4.19",
     "morgan": "^1.9.1",
     "nodemon": "^1.19.1",
     "winston": "^3.2.1"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "@babel/cli": "^7.2.3",
+    "@babel/core": "^7.3.4",
+    "@babel/preset-env": "^7.3.4",
+    "@types/dotenv": "^6.1.1",
+    "@babel/node": "^7.4.5",
+    "babel-jest": "^24.8.0",
+    "eslint": "^5.15.2",
+    "jest": "^24.5.0",
+    "mongodb-memory-server": "^5.1.5",
+    "supertest": "^4.0.2"
+  }
 }

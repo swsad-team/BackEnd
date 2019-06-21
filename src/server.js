@@ -4,7 +4,7 @@ import logger from './util/logger'
 
 mongoose.connect(
   app.get('db_uri'),
-  { useNewUrlParser: true, useFindAndModify: false },
+  { useNewUrlParser: true, useFindAndModify: false, useCreateIndex: true },
   err => {
     if (err) {
       logger.error(err)

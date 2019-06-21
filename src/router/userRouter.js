@@ -17,6 +17,6 @@ router.post('/login', userController.login)
 router.post('/check', loginGuard, userController.check)
 router.get('/:uid', loginGuard, userController.getUser)
 router.patch('/:uid', loginGuard, userController.updateUser)
-router.delete('/delete', loginGuard, userController.deleteUser)
+router.delete('/:uid', loginGuard, userController.deleteUser)
 
 export default router
