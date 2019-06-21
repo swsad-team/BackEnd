@@ -1,6 +1,8 @@
 import mongoose from 'mongoose'
 
-mongoose.set('debug', true)
+if (process.env.NODE_ENV === 'debug') {
+  mongoose.set('debug', true)
+}
 
 const globalSchema = new mongoose.Schema({
   uidCount: {
@@ -18,6 +20,8 @@ const globalSchema = new mongoose.Schema({
 })
 
 const Global = mongoose.model('Glob', globalSchema)
+
+export default Global
 
 export const getNextUid = async () => {
   const g = await Global.findOne({})
