@@ -1,6 +1,7 @@
 import mongoose from 'mongoose'
 import bcrypt from 'bcrypt'
 import { getNextUid } from './global'
+import moment from 'moment'
 if (process.env.NODE_ENV === 'debug') {
   mongoose.set('debug', true)
 }
@@ -26,7 +27,9 @@ const userSchema = new mongoose.Schema({
     required: true,
     type: String,
     unique: true,
-    validate: val => val.match(/^\s*$/) === null,
+    validate: val => {
+      return val.match(/^\s*$/) === null
+    },
   }, // display name
   password: {
     type: String,
@@ -119,10 +122,7 @@ userSchema.pre('save', function(next) {
     this.coin = 0
   }
   if (this.lastCheckDate === undefined) {
-    this.lastCheckDate = new Date(0).toLocaleDateString({
-      month: '2-digit',
-      day: '2-digit',
-    })
+    this.lastCheckDate = moment.unix(0).format('YYYY/MM/DD')
   }
   next()
 })
@@ -135,12 +135,7 @@ userSchema.methods.getPublicFields = function() {
     phone: this.phone,
     coin: this.coin,
     isOrganization: this.isOrganization,
-    isChecked:
-      this.lastCheckDate >=
-      new Date().toLocaleDateString({
-        month: '2-digit',
-        day: '2-digit',
-      }),
+    isChecked: this.lastCheckDate >= moment().format('YYYY/MM/DD'),
   }
   if (this.isOrganization) {
     return { ...common, address: this.address }
