@@ -4,7 +4,6 @@ import config from './config'
 import cookieParser from 'cookie-parser'
 import express from 'express'
 import logger from './util/logger'
-import mongoose from 'mongoose'
 import morgan from 'morgan'
 import router from './router/baseRouter'
 
@@ -34,18 +33,4 @@ app.use(function(err, req, res) {
   res.status(500).end()
 })
 
-mongoose.connect(
-  app.get('db_uri'),
-  { useNewUrlParser: true, useFindAndModify: false },
-  err => {
-    if (err) {
-      logger.error(err)
-    } else {
-      logger.info('Connected to database')
-    }
-  }
-)
-
-app.listen(app.get('port'), () => {
-  logger.info(`Server running on port ${app.get('port')}`)
-})
+export default app
