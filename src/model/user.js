@@ -108,12 +108,14 @@ userSchema.pre('save', async function(next) {
 })
 userSchema.pre('save', function(next) {
   // delete some property
-  if (this.isOrganization == true) {
+  if (this.isOrganization === true) {
     this.gender = undefined
     this.birthYear = undefined
     this.realname = undefined
-    this.studentID = this.uid
-  } else this.address = undefined
+    this.studentID = undefined
+  } else {
+    this.address = undefined
+  }
   // initial coin
   if (this.coin === undefined) {
     this.coin = 0

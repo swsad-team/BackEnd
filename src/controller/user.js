@@ -1,4 +1,3 @@
-import decodeJwtToken from '../util/auth'
 import User from '../model/user'
 import { signJwtToken } from '../util/auth'
 import logger from '../util/logger'
@@ -25,13 +24,11 @@ export const login = async (req, res) => {
   }
 }
 
-export const logout = (req, res) => {}
-
 export const updateUser = async (req, res) => {
   logger.info('CONTROLLER: updateUser')
   const self = req.user
   var data = req.body
-  
+
   const forbiddenProperties = [
     'uid',
     'isOrganization',
@@ -48,11 +45,10 @@ export const updateUser = async (req, res) => {
   }
   try {
     // FIXME: check property [coin, _uid, __v]
-    Object.keys(data).forEach(key => (self[key] = data[key]))
+    Object.keys(data).forEach(key => self[key] = data[key])
     await self.save()
 
     res.status(200).json(self.getPublicFields())
-
   } catch (err) {
     logger.info(err)
     if (err.name === 'ValidationError') {

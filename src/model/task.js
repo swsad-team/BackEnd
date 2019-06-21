@@ -1,6 +1,5 @@
 import dotenv from 'dotenv'
 import { getNextTid } from './global'
-import logger from '../util/logger'
 import mongoose from 'mongoose'
 dotenv.config()
 if (process.env.MODE === 'DEVELOPMENT') {
@@ -130,7 +129,9 @@ const taskSchema = new mongoose.Schema({
 })
 
 taskSchema.pre('save', async function(next) {
-  if (this.tid === undefined) this.tid = await getNextTid()
+  if (this.tid === undefined) {
+    this.tid = await getNextTid()
+  }
   next()
 })
 taskSchema.pre('save', function(next) {
