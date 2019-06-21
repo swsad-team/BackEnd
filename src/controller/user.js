@@ -7,8 +7,8 @@ const initialCoin = 100
 // return JWT token
 export const login = async (req, res) => {
   logger.info('CONTROLLER: login')
-  const account = req.body.account || req.params.account
-  const password = req.body.password || req.params.password
+  const account = req.body.account
+  const password = req.body.password
   const user = await User.findOne({
     $or: [{ email: account }, { phone: account }],
   })
@@ -27,7 +27,10 @@ export const login = async (req, res) => {
 export const updateUser = async (req, res) => {
   logger.info('CONTROLLER: updateUser')
   const self = req.user
-  var data = req.body
+  if (self.uid !== Number(req.params.uid)) {
+    res.status(403).end()
+  }
+  const data = req.body
 
   const forbiddenProperties = [
     'uid',
@@ -44,8 +47,7 @@ export const updateUser = async (req, res) => {
     return
   }
   try {
-    // FIXME: check property [coin, _uid, __v]
-    Object.keys(data).forEach(key => self[key] = data[key])
+    Object.keys(data).forEach(key => (self[key] = data[key]))
     await self.save()
 
     res.status(200).json(self.getPublicFields())
@@ -63,6 +65,7 @@ export const createUser = async (req, res) => {
   logger.info('CONTROLLER: createUser')
 
   const newData = req.body
+  delete newData.uid
   newData.coin = initialCoin
   const checkProperties = ['email', 'phone', 'name', 'studentID']
   try {
@@ -81,7 +84,7 @@ export const createUser = async (req, res) => {
     }
     const user = new User(newData)
     await user.save()
-    res.status(200).json(user.getPublicFields())
+    res.status(201).json(user.getPublicFields())
   } catch (err) {
     logger.info(err)
     if (err.name === 'ValidationError') {

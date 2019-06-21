@@ -120,6 +120,7 @@ export const createTask = async (req, res) => {
   delete data.participants
   delete data.finishers
   delete data.coinPool
+  delete data.tid
   const coins = data.reward * data.numOfPeople
   data.organizational = req.user.isOrganization
   data.coinPool = coins
