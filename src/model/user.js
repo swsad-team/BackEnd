@@ -1,9 +1,8 @@
 import mongoose from 'mongoose'
 import bcrypt from 'bcrypt'
-import dotenv from 'dotenv'
 import { getNextUid } from './global'
-dotenv.config()
-if (process.env.MODE === 'DEVELOPMENT') {
+import moment from 'moment'
+if (process.env.NODE_ENV === 'debug') {
   mongoose.set('debug', true)
 }
 
@@ -28,7 +27,9 @@ const userSchema = new mongoose.Schema({
     required: true,
     type: String,
     unique: true,
-    validate: val => val.match(/^\s*$/) === null,
+    validate: val => {
+      return val.match(/^\s*$/) === null
+    },
   }, // display name
   password: {
     type: String,
@@ -108,21 +109,20 @@ userSchema.pre('save', async function(next) {
 })
 userSchema.pre('save', function(next) {
   // delete some property
-  if (this.isOrganization == true) {
+  if (this.isOrganization === true) {
     this.gender = undefined
     this.birthYear = undefined
     this.realname = undefined
-    this.studentID = this.uid
-  } else this.address = undefined
+    this.studentID = undefined
+  } else {
+    this.address = undefined
+  }
   // initial coin
   if (this.coin === undefined) {
     this.coin = 0
   }
   if (this.lastCheckDate === undefined) {
-    this.lastCheckDate = new Date(0).toLocaleDateString({
-      month: '2-digit',
-      day: '2-digit',
-    })
+    this.lastCheckDate = moment.unix(0).format('YYYY/MM/DD')
   }
   next()
 })
@@ -135,12 +135,7 @@ userSchema.methods.getPublicFields = function() {
     phone: this.phone,
     coin: this.coin,
     isOrganization: this.isOrganization,
-    isChecked:
-      this.lastCheckDate >=
-      new Date().toLocaleDateString({
-        month: '2-digit',
-        day: '2-digit',
-      }),
+    isChecked: this.lastCheckDate >= moment().format('YYYY/MM/DD'),
   }
   if (this.isOrganization) {
     return { ...common, address: this.address }

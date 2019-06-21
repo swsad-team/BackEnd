@@ -1,15 +1,14 @@
-import decodeJwtToken from '../util/auth'
 import User from '../model/user'
 import { signJwtToken } from '../util/auth'
 import logger from '../util/logger'
-
+import moment from 'moment'
 const initialCoin = 100
 
 // return JWT token
 export const login = async (req, res) => {
   logger.info('CONTROLLER: login')
-  const account = req.body.account || req.params.account
-  const password = req.body.password || req.params.password
+  const account = req.body.account
+  const password = req.body.password
   const user = await User.findOne({
     $or: [{ email: account }, { phone: account }],
   })
@@ -25,13 +24,15 @@ export const login = async (req, res) => {
   }
 }
 
-export const logout = (req, res) => {}
-
 export const updateUser = async (req, res) => {
   logger.info('CONTROLLER: updateUser')
   const self = req.user
-  var data = req.body
-  
+  if (self.uid !== Number(req.params.uid)) {
+    res.status(403).end()
+    return
+  }
+  const data = req.body
+
   const forbiddenProperties = [
     'uid',
     'isOrganization',
@@ -47,12 +48,10 @@ export const updateUser = async (req, res) => {
     return
   }
   try {
-    // FIXME: check property [coin, _uid, __v]
     Object.keys(data).forEach(key => (self[key] = data[key]))
     await self.save()
 
     res.status(200).json(self.getPublicFields())
-
   } catch (err) {
     logger.info(err)
     if (err.name === 'ValidationError') {
@@ -67,6 +66,7 @@ export const createUser = async (req, res) => {
   logger.info('CONTROLLER: createUser')
 
   const newData = req.body
+  delete newData.uid
   newData.coin = initialCoin
   const checkProperties = ['email', 'phone', 'name', 'studentID']
   try {
@@ -85,7 +85,7 @@ export const createUser = async (req, res) => {
     }
     const user = new User(newData)
     await user.save()
-    res.status(200).json(user.getPublicFields())
+    res.status(201).json(user.getPublicFields())
   } catch (err) {
     logger.info(err)
     if (err.name === 'ValidationError') {
@@ -103,6 +103,7 @@ export const getUser = async (req, res) => {
     const user = await User.findOne({ uid: req.params.uid })
     if (user === null) {
       res.status(404).end()
+      return
     }
     res.status(200).json({
       ...user.getPublicFields(),
@@ -126,6 +127,7 @@ export const getUsers = async (req, res) => {
     const users = await User.find({ uid: uidArray })
     if (users.length === 0) {
       res.status(404).end()
+      return
     }
     res.status(200).json(
       users.map(user => {
@@ -143,14 +145,13 @@ export const getUsers = async (req, res) => {
 
 export const deleteUser = async (req, res) => {
   logger.info('CONTROLLER: deleteUser')
-
-  const uid = req.body.uid
-  if (req.user.uid !== uid) {
+  const self = req.user
+  if (self.uid !== Number(req.params.uid)) {
     res.status(403).end()
     return
   }
   try {
-    await User.deleteOne({ uid: uid })
+    await User.deleteOne({ uid: self.uid })
     res.status(200).end()
   } catch (err) {
     logger.info(err)
@@ -163,10 +164,7 @@ export const check = async (req, res) => {
 
   const self = req.user
   try {
-    const today = new Date().toLocaleDateString({
-      month: '2-digit',
-      day: '2-digit',
-    })
+    const today = moment().format('YYYY/MM/DD')
     if (self.lastCheckDate < today) {
       self.coin += 50
       self.lastCheckDate = today

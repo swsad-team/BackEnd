@@ -6,15 +6,16 @@
     "jest": true
   },
   "parserOptions": {
-    "ecmaVersion": 2017,
+    "ecmaVersion": 2018,
     "sourceType": "module"
   },
   "rules": {
-    "semi": ["error", "never"],
     "no-console": "warn",
+    "no-await-in-loop": "warn",
+    "semi": ["error", "never"],
     "no-unused-vars": "warn",
     "no-empty": "warn",
-    "indent": ["error", 2],
+    "indent": ["error", 2, { "SwitchCase": 1 }],
     "space-in-parens": "error",
     "no-multiple-empty-lines": [
       "error",
@@ -25,6 +26,10 @@
     ],
     "no-multi-spaces": "error",
     "comma-spacing": "error",
-    "comma-dangle": ["error", true]
+    "no-extra-parens": ["error", "functions"],
+    "no-template-curly-in-string": "error",
+    "curly": "warn",
+    "eqeqeq": ["warn", "always"],
+    "no-eq-null": "warn"
   }
 }
