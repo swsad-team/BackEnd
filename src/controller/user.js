@@ -45,7 +45,7 @@ export const updateUser = async (req, res) => {
   }
   try {
     // FIXME: check property [coin, _uid, __v]
-    Object.keys(data).forEach(key => self[key] = data[key])
+    Object.keys(data).forEach(key => (self[key] = data[key]))
     await self.save()
 
     res.status(200).json(self.getPublicFields())
@@ -63,6 +63,7 @@ export const createUser = async (req, res) => {
   logger.info('CONTROLLER: createUser')
 
   const newData = req.body
+  delete newData.uid
   newData.coin = initialCoin
   const checkProperties = ['email', 'phone', 'name', 'studentID']
   try {
