@@ -15,8 +15,8 @@ beforeAll(async () => {
   })
 })
 
-afterAll(() => async () => {
-  await mongod.stop()
+afterAll(async () => {
+  mongod.stop()
 })
 
 const user0 = {
