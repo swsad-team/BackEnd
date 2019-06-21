@@ -1,9 +1,7 @@
 import mongoose from 'mongoose'
 import bcrypt from 'bcrypt'
-import dotenv from 'dotenv'
 import { getNextUid } from './global'
-dotenv.config()
-if (process.env.MODE === 'DEVELOPMENT') {
+if (process.env.NODE_ENV === 'debug') {
   mongoose.set('debug', true)
 }
 

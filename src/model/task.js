@@ -1,8 +1,7 @@
-import dotenv from 'dotenv'
 import { getNextTid } from './global'
 import mongoose from 'mongoose'
-dotenv.config()
-if (process.env.MODE === 'DEVELOPMENT') {
+
+if (process.env.NODE_ENV === 'debug') {
   mongoose.set('debug', true)
 }
 
