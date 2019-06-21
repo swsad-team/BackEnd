@@ -12,7 +12,10 @@ const app = express()
 
 config(app)
 
-app.use(morgan('tiny'))
+if (process.env.NODE_ENV !== 'test') {
+  app.use(morgan('tiny'))
+}
+
 app.use(cookieParser())
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(bodyParser.json())
