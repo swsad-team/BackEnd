@@ -26,7 +26,13 @@ app.use(bodyParser.json())
 //     .end()
 // })
 app.use(authenticate)
+
 app.use('/api', router)
+
+app.all('*', (req, res) => {
+  res.status(404).end()
+  return
+})
 
 app.use(function(err, req, res) {
   logger.error(err.stack)
