@@ -8,7 +8,7 @@
     "start-dev": "nodemon --exec babel-node src/server.js",
     "start": "node ./.compiled/server.js",
     "lint": "eslint src --fix",
-    "test": "npm run compile && jest dest",
+    "test": "babel src --out-dir .compiled --source-maps && jest .compiled",
     "compile": "babel src --out-dir .compiled --source-maps"
   },
   "repository": {
