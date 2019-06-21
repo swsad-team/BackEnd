@@ -229,15 +229,12 @@ describe('test udpate user operation', () => {
   let jwtTokenUser1
   beforeAll(async () => {
     await mongoose.connection.db.dropDatabase()
-
-    await Promise.all([
-      request(app)
-        .post('/api/users')
-        .send(user0),
-      request(app)
-        .post('/api/users')
-        .send(user1),
-    ])
+    await request(app)
+      .post('/api/users')
+      .send(user0)
+    await request(app)
+      .post('/api/users')
+      .send(user1)
     const response = await request(app)
       .post('/api/users/login')
       .send({
@@ -282,14 +279,12 @@ describe('test delete user operation', () => {
   let jwtTokenUser1
   beforeAll(async () => {
     await mongoose.connection.db.dropDatabase()
-    await Promise.all([
-      request(app)
-        .post('/api/users')
-        .send(user0),
-      request(app)
-        .post('/api/users')
-        .send(user1),
-    ])
+    await request(app)
+      .post('/api/users')
+      .send(user0)
+    await request(app)
+      .post('/api/users')
+      .send(user1)
     const response = await request(app)
       .post('/api/users/login')
       .send({
