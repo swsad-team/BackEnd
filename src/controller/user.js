@@ -8,8 +8,8 @@ const initialCoin = 100
 // return JWT token
 export const login = async (req, res) => {
   logger.info('CONTROLLER: login')
-  const account = req.body.account || req.params.account
-  const password = req.body.password || req.params.password
+  const account = req.body.account
+  const password = req.body.password
   const user = await User.findOne({
     $or: [{ email: account }, { phone: account }],
   })
@@ -85,7 +85,7 @@ export const createUser = async (req, res) => {
     }
     const user = new User(newData)
     await user.save()
-    res.status(200).json(user.getPublicFields())
+    res.status(201).json(user.getPublicFields())
   } catch (err) {
     logger.info(err)
     if (err.name === 'ValidationError') {
