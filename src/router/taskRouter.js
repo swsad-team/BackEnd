@@ -47,12 +47,12 @@ router.post(
   }),
   taskController.finishTask
 )
-// router.post(
-//   '/:tid/quit',
-//   guard({
-//     user: true,
-//   }),
-//   taskController.quitTask
-// )
+router.post(
+  '/:tid/cancel',
+  guard({
+    user: true,
+  }),
+  taskController.cancelTask
+)
 
 export default router

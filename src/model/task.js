@@ -137,12 +137,10 @@ taskSchema.pre('save', function(next) {
   if (this.isQuestionnaire !== true) {
     this.question = undefined
   }
-  if (
-    this.isCancel &&
-    this.participants.length > this.numOfPeople &&
-    this.endTime < Date.now()
-  ) {
+  if (this.isCancel || this.endTime < Date.now()) {
     this.isValid = false
+  } else {
+    this.isValid = true
   }
   next()
 })
@@ -163,6 +161,7 @@ taskSchema.methods.getTaskFields = function() {
     finishers: this.finishers,
     isValid: this.isValid,
     organizational: this.organizational,
+    isCancel: this.isCancel,
   }
 }
 taskSchema.methods.getQuestionnaire = function() {

@@ -249,6 +249,32 @@ export const getAnswersOfTask = async (req, res) => {
   }
 }
 
+export const cancelTask = async (req, res) => {
+  const tid = req.params.tid
+  const self = req.user
+  try {
+    const task = await Task.findOne({ tid })
+    if (task === null) {
+      res.status(404).end('TASK_NOT_FOUND')
+    } else if (task.publisherId !== self.uid) {
+      res.status(403).end('NOT_PUBLISHER')
+    } else if (!task.isValid) {
+      res.status(400).end('TASK_NOT_VALID')
+    } else if (task.finishers.length !== task.participants.length) {
+      res.status(400).end('EXIST_USER_NOT_FINISHED')
+    } else {
+      task.isCancel = true
+      self.coin += task.coinPool
+      task.coinPool = 0
+      await Promise.all([self.save(), task.save()])
+      res.status(200).json(task.getTaskFields())
+    }
+  } catch (err) {
+    logger.info(err)
+    res.status(400).end('UNKOWN_ERROR')
+  }
+}
+
 // export const quitTask = async (req, res) => {
 //   const tid = req.params.tid
 //   const uid = req.user.uid
