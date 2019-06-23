@@ -1,0 +1,5 @@
+dispatch:
+  - url: '*/api/*'
+    service: api-server
+  - url: 'display-project-1.appspot.com/*'
+    service: front-end
