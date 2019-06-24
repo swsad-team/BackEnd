@@ -141,21 +141,23 @@ export const createTask = async (req, res) => {
 
 export const attendTask = async (req, res) => {
   const tid = req.params.tid
+  const self = req.user
   try {
-    const task = await Task.findOne({
-      isValid: true,
-      tid,
-      publisherId: { $ne: req.user.uid },
-      participants: { $ne: req.user.uid },
-    })
+    const task = await Task.findOne({ tid })
     if (task === null) {
-      res.status(400).end()
+      res.status(404).end('TASK_NOT_FOUND')
       return
+    } else if (!task.isValid) {
+      res.status(400).end('TASK_NOT_VALID')
+    } else if (task.publisherId === self.uid) {
+      res.status(400).end('USER_IS_PUBLISHER')
+    } else if (task.participants.includes(self.uid)) {
+      res.stastus(400).end('ALREADY_ATTEND')
+    } else {
+      task.participants.push(self.uid)
+      await task.save()
+      res.status(200).json(task)
     }
-    // start session
-    task.participants.push(req.user.uid)
-    await task.save()
-    res.status(200).end()
   } catch (err) {
     logger.info(err)
     res.status(400).end()
