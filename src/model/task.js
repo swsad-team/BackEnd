@@ -96,16 +96,16 @@ const taskSchema = new mongoose.Schema({
           type: Boolean,
           required: true,
         }, // required to fill in
-        questionType: {
+        type: {
           type: String,
           enum: ['fill', 'single', 'multiple'],
           required: true,
         },
-        questionTitle: {
+        title: {
           type: String,
           required: true,
         },
-        option: {
+        options: {
           type: [String],
           required: function() {
             return this.questionType !== 'fill'
