@@ -32,7 +32,7 @@ const taskSchema = new mongoose.Schema({
   startTime: {
     required: false,
     type: Date,
-    default: Date.now(),
+    default: Date.now,
   },
   endTime: {
     required: true,
