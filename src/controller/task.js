@@ -196,9 +196,9 @@ export const finishTask = async (req, res) => {
       task.coinPool -= task.reward
       req.user.coin += task.reward
       await Promise.all([answer.save(), task.save(), req.user.save()])
-      res.status(200).end('OK')
+      res.status(200).json(task.getTaskFields())
     } else {
-      const { targetUid } = req.body
+      const { user: targetUid } = req.body
       const target = await User.findOne({
         uid: targetUid,
       })
@@ -217,7 +217,7 @@ export const finishTask = async (req, res) => {
       target.coin += task.reward
       task.coinPool -= task.reward
       await Promise.all([task.save(), target.save(), req.user.save()])
-      res.status(200).end('OK')
+      res.status(200).json(task.getTaskFields())
     }
   } catch (err) {
     logger.info(err)
