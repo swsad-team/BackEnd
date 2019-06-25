@@ -166,11 +166,10 @@ export const attendTask = async (req, res) => {
 export const finishTask = async (req, res) => {
   const tid = Number(req.params.tid)
   const self = req.user
-  const targetUid = req.query.user
-  const answers = req.body
   try {
     const task = await Task.findOne({ tid })
     if (task.isQuestionnaire) {
+      const answers = req.body
       if (!task.participants.includes(self.uid)) {
         res.status(400).end('USER_NOT_IN_TASK')
         return
@@ -199,6 +198,7 @@ export const finishTask = async (req, res) => {
       await Promise.all([answer.save(), task.save(), req.user.save()])
       res.status(200).end('OK')
     } else {
+      const { targetUid } = req.body
       const target = await User.findOne({
         uid: targetUid,
       })
