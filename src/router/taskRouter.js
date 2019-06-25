@@ -20,16 +20,10 @@ router.get('/', taskController.getTasks)
 router.get('/:tid', taskController.getTasks)
 router.get(
   '/:tid/questionnaire',
-  guard({
-    user: true,
-  }),
   taskController.getQuestionnaireOfTask
 )
 router.get(
   '/:tid/answers',
-  guard({
-    user: true,
-  }),
   taskController.getAnswersOfTask
 )
 router.post('/', guard(), taskController.createTask)
@@ -42,9 +36,6 @@ router.post(
 )
 router.post(
   '/:tid/finish',
-  guard({
-    user: true,
-  }),
   taskController.finishTask
 )
 router.post(
