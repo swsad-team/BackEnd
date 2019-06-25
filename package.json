@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "description": "Back end",
   "scripts": {
-    "debug": "nodemon --inspect --exec babel-node src/server.js",
-    "start-dev": "nodemon --exec babel-node src/server.js",
+    "debug": "NODE_ENV=debug nodemon --inspect --exec babel-node src/server.js",
+    "start-dev": "NODE_ENV=debug nodemon  --exec babel-node src/server.js",
     "start": "node ./.compiled/server.js",
     "lint": "eslint src --fix",
     "test": "jest src --forceExit --detectOpenHandles",

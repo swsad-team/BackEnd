@@ -32,7 +32,7 @@ const taskSchema = new mongoose.Schema({
   startTime: {
     required: false,
     type: Date,
-    default: Date.now(),
+    default: Date.now,
   },
   endTime: {
     required: true,
@@ -96,16 +96,16 @@ const taskSchema = new mongoose.Schema({
           type: Boolean,
           required: true,
         }, // required to fill in
-        questionType: {
+        type: {
           type: String,
           enum: ['fill', 'single', 'multiple'],
           required: true,
         },
-        questionTitle: {
+        title: {
           type: String,
           required: true,
         },
-        option: {
+        options: {
           type: [String],
           required: function() {
             return this.questionType !== 'fill'
@@ -137,12 +137,10 @@ taskSchema.pre('save', function(next) {
   if (this.isQuestionnaire !== true) {
     this.question = undefined
   }
-  if (
-    this.isCancel &&
-    this.participants.length > this.numOfPeople &&
-    this.endTime < Date.now()
-  ) {
+  if (this.isCancel || this.endTime < Date.now()) {
     this.isValid = false
+  } else {
+    this.isValid = true
   }
   next()
 })
@@ -163,6 +161,7 @@ taskSchema.methods.getTaskFields = function() {
     finishers: this.finishers,
     isValid: this.isValid,
     organizational: this.organizational,
+    isCancel: this.isCancel,
   }
 }
 taskSchema.methods.getQuestionnaire = function() {

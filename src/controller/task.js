@@ -141,21 +141,23 @@ export const createTask = async (req, res) => {
 
 export const attendTask = async (req, res) => {
   const tid = req.params.tid
+  const self = req.user
   try {
-    const task = await Task.findOne({
-      isValid: true,
-      tid,
-      publisherId: { $ne: req.user.uid },
-      participants: { $ne: req.user.uid },
-    })
+    const task = await Task.findOne({ tid })
     if (task === null) {
-      res.status(400).end()
+      res.status(404).end('TASK_NOT_FOUND')
       return
+    } else if (!task.isValid) {
+      res.status(400).end('TASK_NOT_VALID')
+    } else if (task.publisherId === self.uid) {
+      res.status(400).end('USER_IS_PUBLISHER')
+    } else if (task.participants.includes(self.uid)) {
+      res.stastus(400).end('ALREADY_ATTEND')
+    } else {
+      task.participants.push(self.uid)
+      await task.save()
+      res.status(200).json(task)
     }
-    // start session
-    task.participants.push(req.user.uid)
-    await task.save()
-    res.status(200).end()
   } catch (err) {
     logger.info(err)
     res.status(400).end()
@@ -164,11 +166,10 @@ export const attendTask = async (req, res) => {
 export const finishTask = async (req, res) => {
   const tid = Number(req.params.tid)
   const self = req.user
-  const targetUid = req.query.user
-  const answers = req.body
   try {
     const task = await Task.findOne({ tid })
     if (task.isQuestionnaire) {
+      const answers = req.body
       if (!task.participants.includes(self.uid)) {
         res.status(400).end('USER_NOT_IN_TASK')
         return
@@ -195,8 +196,9 @@ export const finishTask = async (req, res) => {
       task.coinPool -= task.reward
       req.user.coin += task.reward
       await Promise.all([answer.save(), task.save(), req.user.save()])
-      res.status(200).end('OK')
+      res.status(200).json(task.getTaskFields())
     } else {
+      const { user: targetUid } = req.body
       const target = await User.findOne({
         uid: targetUid,
       })
@@ -215,7 +217,7 @@ export const finishTask = async (req, res) => {
       target.coin += task.reward
       task.coinPool -= task.reward
       await Promise.all([task.save(), target.save(), req.user.save()])
-      res.status(200).end('OK')
+      res.status(200).json(task.getTaskFields())
     }
   } catch (err) {
     logger.info(err)
@@ -246,6 +248,32 @@ export const getAnswersOfTask = async (req, res) => {
   } catch (err) {
     logger.info(err)
     res.status(400).end()
+  }
+}
+
+export const cancelTask = async (req, res) => {
+  const tid = req.params.tid
+  const self = req.user
+  try {
+    const task = await Task.findOne({ tid })
+    if (task === null) {
+      res.status(404).end('TASK_NOT_FOUND')
+    } else if (task.publisherId !== self.uid) {
+      res.status(403).end('NOT_PUBLISHER')
+    } else if (!task.isValid) {
+      res.status(400).end('TASK_NOT_VALID')
+    } else if (task.finishers.length !== task.participants.length) {
+      res.status(400).end('EXIST_USER_NOT_FINISHED')
+    } else {
+      task.isCancel = true
+      self.coin += task.coinPool
+      task.coinPool = 0
+      await Promise.all([self.save(), task.save()])
+      res.status(200).json(task.getTaskFields())
+    }
+  } catch (err) {
+    logger.info(err)
+    res.status(400).end('UNKOWN_ERROR')
   }
 }
 
