@@ -20,12 +20,10 @@ router.get('/', taskController.getTasks)
 router.get('/:tid', taskController.getTasks)
 router.get(
   '/:tid/questionnaire',
+  guard(),
   taskController.getQuestionnaireOfTask
 )
-router.get(
-  '/:tid/answers',
-  taskController.getAnswersOfTask
-)
+router.get('/:tid/answers', guard(), taskController.getAnswersOfTask)
 router.post('/', guard(), taskController.createTask)
 router.post(
   '/:tid/attend',
@@ -34,16 +32,7 @@ router.post(
   }),
   taskController.attendTask
 )
-router.post(
-  '/:tid/finish',
-  taskController.finishTask
-)
-router.post(
-  '/:tid/cancel',
-  guard({
-    user: true,
-  }),
-  taskController.cancelTask
-)
+router.post('/:tid/finish', guard(), taskController.finishTask)
+router.post('/:tid/cancel', guard(), taskController.cancelTask)
 
 export default router
