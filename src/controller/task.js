@@ -14,6 +14,7 @@ export const getTasks = async (req, res) => {
       isValid: true,
       participants: { $ne: user && user.uid },
       publisherId: { $ne: user && user.uid },
+      isFull: false,
     },
     valid: {
       isValid: true,
