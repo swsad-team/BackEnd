@@ -37,7 +37,13 @@ const taskSchema = new mongoose.Schema({
   endTime: {
     required: true,
     type: Date,
-    validate: val => val > Date.now(),
+    validate: function(val) {
+      if (this.isCancel) {
+        return val === this.endTime
+      } else {
+        return val > Date.now()
+      }
+    },
   },
   reward: {
     type: Number,

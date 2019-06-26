@@ -160,7 +160,7 @@ export const createTask = async (req, res) => {
   data.organizational = req.user.isOrganization
   data.coinPool = coins
   if (req.user.coin < coins) {
-    res.status(400).end('COIN_NOT_ENOUGHT')
+    res.status(400).end('COIN_NOT_ENOUGH')
     return
   }
   try {
@@ -306,8 +306,6 @@ export const cancelTask = async (req, res) => {
       res.status(400).end('TASK_NOT_VALID')
     } else if (task.finishers.length !== task.participants.length) {
       res.status(400).end('EXIST_USER_NOT_FINISHED')
-    } else if (new Date(task.endTime) < Date.now()) {
-      res.status(400).end('TASK_IS_END')
     } else {
       task.isCancel = true
       self.coin += task.coinPool
