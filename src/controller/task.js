@@ -69,9 +69,7 @@ export const getTasks = async (req, res) => {
   }
 
   // sort
-  let sortOption = {
-    startTime: -1,
-  }
+  let sortOption = {}
   switch (sort) {
     case 'startTime':
       sortOption.startTime = -1
@@ -83,8 +81,10 @@ export const getTasks = async (req, res) => {
       sortOption.endTime = -1
       break
     default:
+      sortOption.startTime = -1
       break
   }
+
   try {
     if (tid === undefined) {
       const tasks = await Task.find(queryOption, null, {
