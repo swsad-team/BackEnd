@@ -177,7 +177,7 @@ export const attendTask = async (req, res) => {
     } else if (task.publisherId === self.uid) {
       res.status(400).end('USER_IS_PUBLISHER')
     } else if (task.participants.includes(self.uid)) {
-      res.stastus(400).end('ALREADY_ATTEND')
+      res.status(400).end('ALREADY_ATTEND')
     } else {
       task.participants.push(self.uid)
       await task.save()
