@@ -17,7 +17,10 @@ export const getTasks = async (req, res) => {
       isFull: false,
     },
     valid: {
-      isValid: true,
+      $or: {
+        isValid: true,
+        endTime: { $lt: Date.now() },
+      },
     },
     organizational: {
       organizational: true,
@@ -44,8 +47,12 @@ export const getTasks = async (req, res) => {
       a: true,
     },
     over: {
-      isValid: false,
-      $or: [{ publisherId: user.uid }, { participants: user.uid }],
+      $or: [
+        { publisherId: user.uid },
+        { participants: user.uid },
+        { isValid: false },
+        { endTime: { $gt: Date.now() } },
+      ],
     },
   }
   let queryOption
@@ -184,6 +191,8 @@ export const attendTask = async (req, res) => {
       res.status(400).end('USER_IS_PUBLISHER')
     } else if (task.participants.includes(self.uid)) {
       res.status(400).end('ALREADY_ATTEND')
+    } else if (new Date(task.endTime) < Date.now()) {
+      res.status(400).end('TASK_IS_END')
     } else {
       task.participants.push(self.uid)
       await task.save()
@@ -299,6 +308,8 @@ export const cancelTask = async (req, res) => {
       res.status(400).end('TASK_NOT_VALID')
     } else if (task.finishers.length !== task.participants.length) {
       res.status(400).end('EXIST_USER_NOT_FINISHED')
+    } else if (new Date(task.endTime) < Date.now()) {
+      res.status(400).end('TASK_IS_END')
     } else {
       task.isCancel = true
       self.coin += task.coinPool
