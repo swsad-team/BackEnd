@@ -42,7 +42,7 @@ const userSchema = new mongoose.Schema({
   coin: {
     type: Number,
     required: false,
-    validate: val => val > 0,
+    validate: val => val >= 0,
   },
   lastCheckDate: {
     type: String,
