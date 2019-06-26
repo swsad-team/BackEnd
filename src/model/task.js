@@ -120,10 +120,15 @@ const taskSchema = new mongoose.Schema({
       return !this.isQuestionnaire || val.length !== 0
     },
   },
+  isFull: {
+    type: Boolean,
+    default: false,
+  },
   isValid: {
     type: Boolean,
     default: true,
   },
+
   // questions: questionSchema,
 })
 
@@ -137,11 +142,13 @@ taskSchema.pre('save', function(next) {
   if (this.isQuestionnaire !== true) {
     this.question = undefined
   }
-  if (this.isCancel || this.endTime < Date.now()) {
-    this.isValid = false
-  } else {
-    this.isValid = true
-  }
+  this.isValid = !(
+    this.isCancel ||
+    this.endTime < Date.now() ||
+    this.finishers.length === this.numOfPeople
+  )
+  this.isFull =
+    this.participants && this.participants.length >= this.numOfPeople
   next()
 })
 
