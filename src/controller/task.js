@@ -2,12 +2,12 @@ import AnswerList from '../model/answerList'
 import Task from '../model/task'
 import User from '../model/user'
 import logger from '../util/logger'
+import moment from 'moment'
 export const getTasks = async (req, res) => {
   logger.info('Controller: getTasks')
   let { page, per_page, sort, filter } = req.query
   const { tid } = req.params
   const user = req.user
-
   // filter
   const filterOption = {
     participable: {
@@ -17,10 +17,8 @@ export const getTasks = async (req, res) => {
       isFull: false,
     },
     valid: {
-      $or: {
-        isValid: true,
-        endTime: { $lt: Date.now() },
-      },
+      isValid: true,
+      endTime: { $gt: moment().toISOString() },
     },
     organizational: {
       organizational: true,
@@ -47,11 +45,11 @@ export const getTasks = async (req, res) => {
       a: true,
     },
     over: {
-      $or: [
-        { publisherId: user.uid },
-        { participants: user.uid },
-        { isValid: false },
-        { endTime: { $gt: Date.now() } },
+      $and: [
+        { $or: [{ publisherId: user.uid }, { participants: user.uid }] },
+        {
+          endTime: { $lt: moment().toISOString() },
+        },
       ],
     },
   }
