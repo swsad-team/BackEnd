@@ -1,5 +1,7 @@
 dispatch:
   - url: '*/api/*'
     service: api-server
-  - url: 'display-project-1.appspot.com/*'
+  - url: 'swsad-cloud.appspot.com/*'
+    service: front-end
+  - url: 'swsad.xyz/*'
     service: front-end
