@@ -160,7 +160,8 @@ export const createTask = async (req, res) => {
   try {
     const task = new Task(data)
     req.user.coin -= coins
-    await Promise.all([task.save(), req.user.save()])
+    await req.user.save()
+    await task.save()
     res.status(200).json(task.getTaskFields())
   } catch (err) {
     logger.info(err)
@@ -224,7 +225,9 @@ export const finishTask = async (req, res) => {
       task.finishers.push(self.uid)
       task.coinPool -= task.reward
       req.user.coin += task.reward
-      await Promise.all([answer.save(), task.save(), req.user.save()])
+      await answer.save()
+      await task.save()
+      await req.user.save()
       res.status(200).json(task.getTaskFields())
     } else {
       const { user: targetUid } = req.body
@@ -245,7 +248,9 @@ export const finishTask = async (req, res) => {
       task.finishers.push(targetUid)
       target.coin += task.reward
       task.coinPool -= task.reward
-      await Promise.all([task.save(), target.save(), req.user.save()])
+      await task.save()
+      await target.save()
+      await req.user.save()
       res.status(200).json(task.getTaskFields())
     }
   } catch (err) {
@@ -297,7 +302,8 @@ export const cancelTask = async (req, res) => {
       task.isCancel = true
       self.coin += task.coinPool
       task.coinPool = 0
-      await Promise.all([self.save(), task.save()])
+      await task.save()
+      await self.save()
       res.status(200).json(task.getTaskFields())
     }
   } catch (err) {
