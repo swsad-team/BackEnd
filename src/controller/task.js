@@ -16,7 +16,7 @@ export const getTasks = async (req, res) => {
       publisherId: { $ne: user && user.uid },
     },
     valid: {
-      isValid: { $eq: true },
+      isValid: true,
     },
     organizational: {
       organizational: true,
@@ -30,11 +30,36 @@ export const getTasks = async (req, res) => {
     mission: {
       isQuestionnaire: false,
     },
+    publish: {
+      publisherId: user.uid,
+    },
+    participate: {
+      participants: user.uid,
+    },
+    waitConfirm: {
+      finishers: { $ne: user.uid },
+    },
+    toConfirm: {
+      a: true,
+    },
+    over: {
+      isValid: false,
+      $or: [{ publisherId: user.uid }, { participants: user.uid }],
+    },
   }
-  const queryOption =
-    filter &&
-    filter.reduce((acc, val) => ({ ...acc, ...filterOption[val] }), {})
-
+  let queryOption
+  if (filter) {
+    queryOption = filter.reduce(
+      (acc, val) => ({ ...acc, ...filterOption[val] }),
+      {}
+    )
+    if (filter.includes('organizational') && filter.includes('personal')) {
+      delete queryOption.organizational
+    }
+    if (filter.includes('mission') && filter.includes('questionnaire')) {
+      delete queryOption.isQuestionnaire
+    }
+  }
   // pagination
   let skip
   let limit
@@ -44,22 +69,22 @@ export const getTasks = async (req, res) => {
   }
 
   // sort
-  let sortOption
+  let sortOption = {
+    startTime: -1,
+  }
   switch (sort) {
-    case 'time':
-      sortOption = {
-        startTime: -1,
-      }
+    case 'startTime':
+      sortOption.startTime = -1
       break
     case 'coin':
-      sortOption = {
-        reward: -1,
-      }
+      sortOption.reward = -1
+      break
+    case 'endTime':
+      sortOption.endTime = -1
       break
     default:
       break
   }
-
   try {
     if (tid === undefined) {
       const tasks = await Task.find(queryOption, null, {
