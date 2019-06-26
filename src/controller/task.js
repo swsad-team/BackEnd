@@ -146,6 +146,10 @@ export const createTask = async (req, res) => {
   delete data.finishers
   delete data.coinPool
   delete data.tid
+  if (data.reward <= 0) {
+    res.status(400).end('INVALID_REWARD')
+    return
+  }
   const coins = data.reward * data.numOfPeople
   data.organizational = req.user.isOrganization
   data.coinPool = coins
