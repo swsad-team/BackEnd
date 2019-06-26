@@ -68,7 +68,12 @@ export const createUser = async (req, res) => {
   const newData = req.body
   delete newData.uid
   newData.coin = initialCoin
-  const checkProperties = ['email', 'phone', 'name', 'studentID']
+  let checkProperties = []
+  if (newData.isOrganization) {
+    checkProperties = ['email', 'phone', 'name']
+  } else {
+    checkProperties = ['email', 'phone', 'name', 'studentID']
+  }
   try {
     // check user
     const another = await User.findOne({

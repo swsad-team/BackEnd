@@ -71,7 +71,6 @@ const userSchema = new mongoose.Schema({
   },
   studentID: {
     type: String,
-    unique: true,
     required: function() {
       return this.isOrganization !== true
     },
